@@ -5,7 +5,8 @@ import 'dart:async';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
-//import '../theme/app_theme.dart';  
+import '../theme/app_theme.dart';
+import 'package:animate_gradient/animate_gradient.dart'; // New import
 
 class ChatInterface extends StatefulWidget {
   final String initialMessage;
@@ -417,7 +418,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error opening link: $e'),
-            backgroundColor: const Color(0xFF282442),
+            backgroundColor: AppTheme.bubbleUser,
           ),
         );
       }
@@ -427,9 +428,9 @@ class _ChatInterfaceState extends State<ChatInterface> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0a0913),
+      backgroundColor: AppTheme.bg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1d1936),
+        backgroundColor: AppTheme.panel.withOpacity(0.95),
         elevation: 0,
         title: const Text(
           'Travel Assistant',
@@ -440,120 +441,148 @@ class _ChatInterfaceState extends State<ChatInterface> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Column(
-        children: [
-          // Chat messages area
-          Expanded(
-            child: Stack(
-              children: [
-                ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _messages.length + (_isLoading && _messages.isNotEmpty && !_messages.last.isStreaming ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == _messages.length && _isLoading) {
-                      return const TravelLoader();
-                    }
-                    final message = _messages[index];
-
-                    if (message.isStreaming && message.text.isEmpty) {
-                      return const TravelLoader();
-                    }
-
-                    return MessageBubble(
-                      message: message,
-                      onLinkTap: _launchURL,
-                    );
-                  },
-                ),
-
-                if (_showJumpToBottom)
-                  Positioned(
-                    right: 16,
-                    bottom: 12, // sits above the composer
-                    child: GestureDetector(
-                      onTap: _scrollToBottom,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF282442),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.arrow_downward, size: 16, color: Colors.white),
-                            SizedBox(width: 6),
-                            Text('Jump to latest', style: TextStyle(color: Colors.white, fontSize: 12)),
-                          ],
+      body: AnimateGradient(
+        primaryColors: const [
+        Color(0xFF0a0b1e), // Deep space blue
+        Color(0xFF1a1b3a), // Dark blue
+        Color(0xFF2d1b3d), // Deep purple
+        Color(0xFF0f1419), // Almost black
+        Color(0xFF4c1d95), // Rich purple
+        Color(0xFF1e3a8a), // Royal blue
+      ],
+      secondaryColors: const [
+        Color(0xFF1e2a5e), // Brighter blue
+        Color(0xFF3d2a5f), // Purple blue
+        Color(0xFF1a365d), // Steel blue
+        Color(0xFF7c3aed), // Bright purple
+        Color(0xFF3b82f6), // Sky blue
+        Color(0xFF06b6d4), // Cyan
+      ],
+        duration: const Duration(seconds: 6),
+        animateAlignments: true, // Enables random movement
+        reverse: true, // Adds reverse animation for more randomness
+        child: Column(
+          children: [
+            // Chat messages area
+            Expanded(
+              child: Stack(
+                children: [
+                  ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _messages.length + (_isLoading && _messages.isNotEmpty && !_messages.last.isStreaming ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _messages.length && _isLoading) {
+                        return const TravelLoader();
+                      }
+                      final message = _messages[index];
+        
+                      if (message.isStreaming && message.text.isEmpty) {
+                        return const TravelLoader();
+                      }
+        
+                      return MessageBubble(
+                        message: message,
+                        onLinkTap: _launchURL,
+                      );
+                    },
+                  ),
+        
+                  if (_showJumpToBottom)
+                    Positioned(
+                      right: 16,
+                      bottom: 12, // sits above the composer
+                      child: GestureDetector(
+                        onTap: _scrollToBottom,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.bubbleUser,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.25),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.arrow_downward, size: 16, color: Colors.white),
+                              SizedBox(width: 6),
+                              Text('Jump to latest', style: TextStyle(color: Colors.white, fontSize: 12)),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          // Input area
-          Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFF1d1936),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
+                ],
               ),
             ),
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    minLines: 1,
-                    maxLines: 5,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.newline,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      hintText: 'Ask me anything about travel...',
-                      hintStyle: TextStyle(color: Colors.white54),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
-                    enabled: !_isLoading,
-                  ),
+            // Input area
+            Container(
+              decoration: BoxDecoration(
+                color: AppTheme.panel.withOpacity(0.95),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
                 ),
-                const SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: _isLoading 
-                      ? const Color(0xFF282442).withOpacity(0.5) 
-                      : const Color(0xFF282442),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.send, 
-                      color: _isLoading 
-                          ? Colors.white.withOpacity(0.5) 
-                          : Colors.white,
-                    ),
-                    onPressed: _isLoading 
-                        ? null 
-                        : () {
-                          HapticFeedback.lightImpact(); // click feel
-                          _sendMessage(_messageController.text);
-                        },
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
                   ),
-                ),
-              ],
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      minLines: 1,
+                      maxLines: 5,
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.newline,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        hintText: 'Ask me anything about travel...',
+                        hintStyle: TextStyle(color: Colors.white54),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
+                      enabled: !_isLoading,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  CircleAvatar(
+                    backgroundColor: _isLoading 
+                        ? AppTheme.bubbleUser.withOpacity(0.5) 
+                        : AppTheme.bubbleUser,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.send, 
+                        color: _isLoading 
+                            ? Colors.white.withOpacity(0.5) 
+                            : Colors.white,
+                      ),
+                      onPressed: _isLoading 
+                          ? null 
+                          : () {
+                            HapticFeedback.lightImpact(); // click feel
+                            _sendMessage(_messageController.text);
+                          },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -614,8 +643,14 @@ class MessageBubble extends StatelessWidget {
         maxWidth: MediaQuery.of(context).size.width * 0.75,
       ),
       decoration: BoxDecoration(
-        color: message.isUser ? const Color(0xFF282442) : const Color(0xFF1d1936),
+        color: message.isUser 
+          ? AppTheme.bubbleUser.withOpacity(0.9) 
+          : AppTheme.panel.withOpacity(0.9),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.05),
+          width: 0.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -885,7 +920,7 @@ class _TravelLoaderState extends State<TravelLoader>
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1d1936),
+          color: AppTheme.panel,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -904,7 +939,7 @@ class _TravelLoaderState extends State<TravelLoader>
                     child: Icon(
                       travelIcons[currentIconIndex],
                       size: 16,
-                      color: const Color(0xFF5DADE2), // Light blue accent color
+                      color: AppTheme.accent, // Light blue accent color
                     ),
                   ),
                 ),
@@ -933,7 +968,7 @@ class _TravelLoaderState extends State<TravelLoader>
                       height: 4,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF5DADE2).withOpacity(
+                        color: AppTheme.accent.withOpacity(
                           value < 0.5 ? value * 2 : 2 - value * 2,
                         ),
                       ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui'; // For ImageFilter
 import 'chat_interface.dart'; // Import the chat interface
-import '../theme/app_theme.dart';  
+import '../theme/app_theme.dart';
+import 'package:animate_gradient/animate_gradient.dart'; // New import
 // ignore_for_file: prefer_const_constructors
 
 class FadeScalePageRoute<T> extends PageRouteBuilder<T> {
@@ -247,106 +249,137 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Color(0xFF0a0913),
-      body: SafeArea(
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              GestureDetector(
-                onTap: _openSuggestions,
-                child: Hero(
-                  tag: 'suggestions-hero',
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: Color(0xff282442),
-                        borderRadius: BorderRadius.circular(20)
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: const TextSpan(
-                          children: [
-                            TextSpan(
-                              text: "More suggestions ",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.white,
+      backgroundColor: AppTheme.bg,
+      body: AnimateGradient(
+        primaryColors: const [
+        Color(0xFF0a0b1e), // Deep space blue
+        Color(0xFF1a1b3a), // Dark blue
+        Color(0xFF2d1b3d), // Deep purple
+        Color(0xFF0f1419), // Almost black
+        Color(0xFF4c1d95), // Rich purple
+        Color(0xFF1e3a8a), // Royal blue
+      ],
+      secondaryColors: const [
+        Color(0xFF1e2a5e), // Brighter blue
+        Color(0xFF3d2a5f), // Purple blue
+        Color(0xFF1a365d), // Steel blue
+        Color(0xFF7c3aed), // Bright purple
+        Color(0xFF3b82f6), // Sky blue
+        Color(0xFF06b6d4), // Cyan
+      ],
+        duration: const Duration(seconds: 6),
+        animateAlignments: true, // Enables random movement
+        reverse: true, // Adds reverse animation for more randomness
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GestureDetector(
+                  onTap: _openSuggestions,
+                  child: Hero(
+                    tag: 'suggestions-hero',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.bubbleUser.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: RichText(
+                              textAlign: TextAlign.center,
+                              text: const TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "More suggestions ",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  WidgetSpan(
+                                    alignment: PlaceholderAlignment.middle,
+                                    child: Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Container(
-                height: screenSize.height*0.25,
-                color: Color(0xFF0a0913),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        GestureDetector(
-                          onTap: () => _navigateToChat("Give me documents for a US Visa?"),
-                          child: centeredTextContainer(
-                            boldText: "Give me documents",
-                            normalText: " for a US Visa?",
-                            size: screenSize.width,
-                            icon: const Icon(Icons.description, color: Colors.white, size: 20),
+                Container(
+                  height: screenSize.height*0.25,
+                  color: Colors.transparent,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          GestureDetector(
+                            onTap: () => _navigateToChat("Give me documents for a US Visa?"),
+                            child: centeredTextContainer(
+                              boldText: "Give me documents",
+                              normalText: " for a US Visa?",
+                              size: screenSize.width,
+                              icon: const Icon(Icons.description, color: Colors.white, size: 20),
+                            ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
-                          child: centeredTextContainer(
-                            boldText: "How long does it take to process",
-                            normalText: " a UK work visa?",
-                            size: screenSize.width,
-                            icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
+                          GestureDetector(
+                            onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
+                            child: centeredTextContainer(
+                              boldText: "How long does it take to process",
+                              normalText: " a UK work visa?",
+                              size: screenSize.width,
+                              icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        GestureDetector(
-                          onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
-                          child: centeredTextContainer(
-                            boldText: "Give me flights to London",
-                            normalText: " if I want to leave at 20th October.",
-                            size: screenSize.width,
-                            icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          GestureDetector(
+                            onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
+                            child: centeredTextContainer(
+                              boldText: "Give me flights to London",
+                              normalText: " if I want to leave at 20th October.",
+                              size: screenSize.width,
+                              icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                            ),
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
-                          child: centeredTextContainer(
-                            boldText: "Give me hotel options in Athens",
-                            normalText: " from 16th May to 20th May 2026.",
-                            size: screenSize.width,
-                            icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                          GestureDetector(
+                            onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
+                            child: centeredTextContainer(
+                              boldText: "Give me hotel options in Athens",
+                              normalText: " from 16th May to 20th May 2026.",
+                              size: screenSize.width,
+                              icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -356,12 +389,19 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
         child: Container(
           width: double.infinity,
           height: screenSize.width * 0.25,
-          decoration: const BoxDecoration(
-            color: Color(0xff1d1936),
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: AppTheme.panel.withOpacity(0.95),
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(30),
               topRight: Radius.circular(30),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
@@ -405,8 +445,19 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
       height: size * 0.2,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xff1d1936),
+        color: AppTheme.panel.withOpacity(0.85),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.05),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
