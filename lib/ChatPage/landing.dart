@@ -374,7 +374,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                       ),
                     ),
                     // Add padding at the bottom for the input area
-                    SizedBox(height: 100),
+                    SizedBox(height: MediaQuery.of(context).padding.bottom + 120),
                   ],
                 ),
               ),
@@ -390,7 +390,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                     topRight: Radius.circular(30),
                   ),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
                     child: Container(
                       padding: EdgeInsets.only(
                         left: 20,
@@ -443,8 +443,9 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 decoration: InputDecoration(
                                   hintText: 'Where shall we travel?',
                                   hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: Colors.white.withOpacity(0.5),
                                     fontSize: 16,
+                                    fontWeight: FontWeight.w400,
                                   ),
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
@@ -453,7 +454,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                   ),
                                   prefixIcon: Icon(
                                     Icons.explore,
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: Colors.white.withOpacity(0.5),
                                     size: 22,
                                   ),
                                 ),

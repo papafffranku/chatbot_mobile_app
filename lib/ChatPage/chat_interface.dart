@@ -449,7 +449,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
             children: [
               // New Chat button at top right
               Padding(
-                padding: const EdgeInsets.only(top: 8, right: 16),
+                padding: const EdgeInsets.only(top: 16, right: 16, left: 16),
                 child: Align(
                   alignment: Alignment.topRight,
                   child: ClipRRect(
@@ -623,7 +623,10 @@ class _ChatInterfaceState extends State<ChatInterface> {
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Ask me anything about travel...',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                      hintStyle: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                        fontWeight: FontWeight.w400,
+                      ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 20,
