@@ -6,7 +6,9 @@ import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
-import 'package:animate_gradient/animate_gradient.dart'; // New import
+import 'package:mesh_gradient/mesh_gradient.dart';
+import '../main.dart';
+import 'dart:ui';
 
 class ChatInterface extends StatefulWidget {
   final String initialMessage;
@@ -79,7 +81,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
       request.headers['Content-Type'] = 'application/json';
       request.headers['Accept'] = 'text/event-stream';
       request.body = json.encode({
-        'user_id': 'Test12',
+        'user_id': globalUserId,
         'message': message,
       });
 
@@ -165,7 +167,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'user_id': 'Test12',
+          'user_id': globalUserId,
           'message': message,
         }),
       ).timeout(
@@ -429,159 +431,260 @@ class _ChatInterfaceState extends State<ChatInterface> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bg,
-      appBar: AppBar(
-        backgroundColor: AppTheme.panel.withOpacity(0.95),
-        elevation: 0,
-        title: const Text(
-          'Travel Assistant',
-          style: TextStyle(color: Colors.white),
+      extendBody: true,
+      body: AnimatedMeshGradient(
+        colors: const [
+          Color(0xFF0a0b1e), // Deep space blue
+          Color(0xFF4c1d95), // Rich purple
+          Color(0xFF3b82f6), // Sky blue
+          Color(0xFF06b6d4), // Cyan
+        ],
+        options: AnimatedMeshGradientOptions(
+          amplitude: 30,
+          frequency: 5,
+          speed: 3,
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: AnimateGradient(
-        primaryColors: const [
-        Color(0xFF0a0b1e), // Deep space blue
-        Color(0xFF1a1b3a), // Dark blue
-        Color(0xFF2d1b3d), // Deep purple
-        Color(0xFF0f1419), // Almost black
-        Color(0xFF4c1d95), // Rich purple
-        Color(0xFF1e3a8a), // Royal blue
-      ],
-      secondaryColors: const [
-        Color(0xFF1e2a5e), // Brighter blue
-        Color(0xFF3d2a5f), // Purple blue
-        Color(0xFF1a365d), // Steel blue
-        Color(0xFF7c3aed), // Bright purple
-        Color(0xFF3b82f6), // Sky blue
-        Color(0xFF06b6d4), // Cyan
-      ],
-        duration: const Duration(seconds: 6),
-        animateAlignments: true, // Enables random movement
-        reverse: true, // Adds reverse animation for more randomness
-        child: Column(
-          children: [
-            // Chat messages area
-            Expanded(
-              child: Stack(
-                children: [
-                  ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length + (_isLoading && _messages.isNotEmpty && !_messages.last.isStreaming ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == _messages.length && _isLoading) {
-                        return const TravelLoader();
-                      }
-                      final message = _messages[index];
-        
-                      if (message.isStreaming && message.text.isEmpty) {
-                        return const TravelLoader();
-                      }
-        
-                      return MessageBubble(
-                        message: message,
-                        onLinkTap: _launchURL,
-                      );
-                    },
-                  ),
-        
-                  if (_showJumpToBottom)
-                    Positioned(
-                      right: 16,
-                      bottom: 12, // sits above the composer
-                      child: GestureDetector(
-                        onTap: _scrollToBottom,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.bubbleUser,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.25),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+        child: SafeArea(
+          child: Column(
+            children: [
+              // New Chat button at top right
+              Padding(
+                padding: const EdgeInsets.only(top: 8, right: 16),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(Icons.arrow_downward, size: 16, color: Colors.white),
-                              SizedBox(width: 6),
-                              Text('Jump to latest', style: TextStyle(color: Colors.white, fontSize: 12)),
-                            ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.pop(context);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.add, color: Colors.white, size: 18),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'New Chat',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-            // Input area
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.panel.withOpacity(0.95),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
                   ),
-                ],
+                ),
               ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      minLines: 1,
-                      maxLines: 5,
-                      keyboardType: TextInputType.multiline,
-                      textInputAction: TextInputAction.newline,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        hintText: 'Ask me anything about travel...',
-                        hintStyle: TextStyle(color: Colors.white54),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              // Chat messages area
+              Expanded(
+                child: Stack(
+                  children: [
+                    ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        top: 8,
+                        bottom: 100, // Increased padding to ensure messages don't go behind input
                       ),
-                      onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
-                      enabled: !_isLoading,
+                      itemCount: _messages.length + (_isLoading && _messages.isNotEmpty && !_messages.last.isStreaming ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _messages.length && _isLoading) {
+                          return const TravelLoader();
+                        }
+                        final message = _messages[index];
+        
+                        if (message.isStreaming && message.text.isEmpty) {
+                          return const TravelLoader();
+                        }
+        
+                        return MessageBubble(
+                          message: message,
+                          onLinkTap: _launchURL,
+                        );
+                      },
+                    ),
+        
+                    if (_showJumpToBottom)
+                      Positioned(
+                        right: 16,
+                        bottom: 100, // Moved up to be above the input area
+                        child: GestureDetector(
+                          onTap: _scrollToBottom,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.bubbleUser,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.arrow_downward, size: 16, color: Colors.white),
+                                SizedBox(width: 6),
+                                Text('Jump to latest', style: TextStyle(color: Colors.white, fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Input area 
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.transparent,
+              AppTheme.panel.withOpacity(0.3),
+              AppTheme.panel.withOpacity(0.6),
+              AppTheme.panel.withOpacity(0.95),
+            ],
+            stops: const [0.0, 0.3, 0.6, 1.0],
+          ),
+        ),
+        child: Container(
+          margin: const EdgeInsets.only(top: 20),
+          decoration: BoxDecoration(
+            color: AppTheme.panel.withOpacity(0.95),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                      width: 1,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor: _isLoading 
-                        ? AppTheme.bubbleUser.withOpacity(0.5) 
-                        : AppTheme.bubbleUser,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.send, 
-                        color: _isLoading 
-                            ? Colors.white.withOpacity(0.5) 
-                            : Colors.white,
+                  child: TextField(
+                    controller: _messageController,
+                    minLines: 1,
+                    maxLines: 5,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Ask me anything about travel...',
+                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
                       ),
-                      onPressed: _isLoading 
-                          ? null 
-                          : () {
-                            HapticFeedback.lightImpact(); // click feel
+                    ),
+                    onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
+                    enabled: !_isLoading,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: _isLoading
+                        ? [
+                            AppTheme.bubbleUser.withOpacity(0.3),
+                            AppTheme.bubbleUser.withOpacity(0.3),
+                          ]
+                        : [
+                            AppTheme.bubbleUser,
+                            AppTheme.accent,
+                          ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: !_isLoading
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.accent.withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(50),
+                    onTap: _isLoading
+                        ? null
+                        : () {
+                            HapticFeedback.lightImpact();
                             _sendMessage(_messageController.text);
                           },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      child: Icon(
+                        _isLoading ? Icons.hourglass_empty : Icons.send,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -763,44 +866,81 @@ class MessageBubble extends StatelessWidget {
       );
     }
 
-    // Assistant: left-aligned with bot avatar and a small copy button below
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const CircleAvatar(
-          radius: 12,
-          backgroundColor: Color(0xFF5DADE2),
-          child: Icon(Icons.travel_explore, size: 14, color: Colors.white),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              bubble,
-              const SizedBox(height: 4),
-              TextButton.icon(
-                onPressed: () async {
-                  final text = _plainTextFromHtml(message.text);
-                  await Clipboard.setData(ClipboardData(text: text));
-                  HapticFeedback.selectionClick();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Copied')),
-                  );
-                },
-                icon: const Icon(Icons.copy, size: 14, color: Colors.white70),
-                label: const Text('Copy', style: TextStyle(fontSize: 12, color: Colors.white70)),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                ),
-              ),
-            ],
+    // Assistant: left-aligned with bot avatar and a frosted glass copy button
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8), // Add padding below each assistant message
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const CircleAvatar(
+            radius: 12,
+            backgroundColor: Color(0xFF5DADE2),
+            child: Icon(Icons.travel_explore, size: 14, color: Colors.white),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                bubble,
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () async {
+                            final text = _plainTextFromHtml(message.text);
+                            await Clipboard.setData(ClipboardData(text: text));
+                            HapticFeedback.selectionClick();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Copied to clipboard'),
+                                backgroundColor: AppTheme.panel,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.copy, size: 14, color: Colors.white70),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Copy',
+                                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -808,7 +948,6 @@ class MessageBubble extends StatelessWidget {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 }
-
 
 // Travel-themed loader widget (keeping your existing implementation)
 class TravelLoader extends StatefulWidget {
