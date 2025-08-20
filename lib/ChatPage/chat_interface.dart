@@ -9,6 +9,7 @@ import '../theme/app_theme.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 import '../main.dart';
 import 'dart:ui';
+import '../Settings/SettingsPage.dart';
 
 class ChatInterface extends StatefulWidget {
   final String initialMessage;
@@ -214,61 +215,57 @@ class _ChatInterfaceState extends State<ChatInterface> {
         
       case 'chunk':
         if (!_didHapticOnFirstChunk) {
-          HapticFeedback.selectionClick(); // first token arrives
+          HapticFeedback.selectionClick();
           _didHapticOnFirstChunk = true;
         }
 
-        // IMPORTANT: The backend sends accumulated content, not incremental
-        // So we directly replace the text, not append
         setState(() {
           _currentStreamingMessage = event['content'] ?? '';
-          
           // Convert markdown to HTML for better rendering
           streamingMessage.text = _markdownToHtml(_currentStreamingMessage);
-          
-          // Optional: Add a typing indicator effect by showing raw text while streaming
-          // and only converting to HTML when done
-          // streamingMessage.text = _currentStreamingMessage; // For raw text during streaming
         });
         
-        // Auto-scroll to bottom as new content arrives
         _scrollToBottom();
         break;
         
       case 'complete':
-        // Final complete message (for non-streaming responses)
-        HapticFeedback.mediumImpact(); // reply finished
-
+        // Final complete message (for non-streaming responses like flights/hotels)
+        HapticFeedback.mediumImpact();
         setState(() {
           final content = event['content'] ?? '';
-          streamingMessage.text = _markdownToHtml(content);
+          final cleanedContent = _cleanMarkdownContent(content);
+
+          // ✅ keep _currentStreamingMessage in sync so 'done' won't revert to "Searching..."
+          _currentStreamingMessage = cleanedContent;
+
+          streamingMessage.text = _markdownToHtml(cleanedContent);
           streamingMessage.isStreaming = false;
           _isLoading = false;
         });
         _scrollToBottom();
         break;
-        
-      case 'memory':
-        // Memory update - you can store this if needed for session management
-        // final memory = event['memory'];
-        break;
-        
+
       case 'done':
         // Streaming complete
         setState(() {
-          // Apply final markdown formatting if we were showing raw text
-          streamingMessage.text = _markdownToHtml(_currentStreamingMessage);
-          streamingMessage.isStreaming = false;
+          // ✅ only finalize from _currentStreamingMessage if we were still streaming
+          if (streamingMessage.isStreaming) {
+            final cleanedContent = _cleanMarkdownContent(_currentStreamingMessage);
+            streamingMessage.text = _markdownToHtml(cleanedContent);
+            streamingMessage.isStreaming = false;
+          }
           _isLoading = false;
         });
-        HapticFeedback.mediumImpact(); // completion feedback
+        HapticFeedback.mediumImpact();
         break;
+
         
       case 'error':
         _handleError(event['error'] ?? 'Unknown error');
         break;
     }
   }
+
 
   void _handleStreamError() {
     setState(() {
@@ -311,80 +308,98 @@ class _ChatInterfaceState extends State<ChatInterface> {
     });
   }
 
-  String _markdownToHtml(String markdown) {
-    String html = markdown;
-
-    // First, fix URLs that might be split across lines
-    // Handle URLs in angle brackets first (more specific)
-    html = html.replaceAllMapped(
-      RegExp(r'<(https?://[^>]+?)>', dotAll: true),
-      (match) {
-        // Remove any whitespace (including newlines) from within the URL
-        String url = match.group(1)!.replaceAll(RegExp(r'\s+'), '');
-        return '<$url>';
-      },
-    );
-
-    // Handle markdown-style links [text](url) - including those with angle brackets
-    html = html.replaceAllMapped(
-      RegExp(r'\[([^\]]+?)\]\(<?([^)>]+?)>?\)', dotAll: true),
+  // Add this new helper method to clean markdown content before processing:
+  String _cleanMarkdownContent(String content) {
+    if (content.isEmpty) return content;
+    
+    // First, fix URLs that are broken across lines
+    // This regex finds markdown links where the URL might have newlines
+    content = content.replaceAllMapped(
+      RegExp(r'\[([^\]]+?)\]\(<([^>]+?)>\)', dotAll: true),
       (match) {
         String linkText = match.group(1)!.trim();
-        // Remove any whitespace from within the URL
-        String url = match.group(2)!.replaceAll(RegExp(r'\s+'), '');
+        String url = match.group(2)!;
+        // Remove ALL whitespace including newlines from URL
+        url = url.replaceAll(RegExp(r'\s+'), '');
+        return '[$linkText](<$url>)';
+      },
+    );
+    
+    // Also handle links without angle brackets
+    content = content.replaceAllMapped(
+      RegExp(r'\[([^\]]+?)\]\(([^)]+?)\)', dotAll: true),
+      (match) {
+        String linkText = match.group(1)!.trim();
+        String url = match.group(2)!;
+        // Remove ALL whitespace including newlines from URL
+        url = url.replaceAll(RegExp(r'\s+'), '');
         return '[$linkText]($url)';
       },
     );
+    
+    return content;
+  }
 
-    // Also handle bare URLs that might be split (without angle brackets)
-    html = html.replaceAllMapped(
-      RegExp(r'(https?://[^\s<>\[\]]+)', dotAll: true),
-      (match) {
-        String url = match.group(1)!;
-        // Check if this URL seems to be broken by newlines
-        if (url.contains('\n') || url.contains('\r')) {
-          url = url.replaceAll(RegExp(r'\s+'), '');
-        }
-        return url;
-      },
-    );
+  String _markdownToHtml(String markdown) {
+    if (markdown.isEmpty) return markdown;
+    
+    String html = markdown;
 
-    // Convert headers
-    html = html.replaceAllMapped(
-      RegExp(r'^## (.+)$', multiLine: true),
-      (match) => '<h2>${match.group(1)}</h2>',
-    );
+    // Convert headers (### then ##)
     html = html.replaceAllMapped(
       RegExp(r'^### (.+)$', multiLine: true),
       (match) => '<h3>${match.group(1)}</h3>',
     );
+    html = html.replaceAllMapped(
+      RegExp(r'^## (.+)$', multiLine: true),
+      (match) => '<h2>${match.group(1)}</h2>',
+    );
 
-    // Convert bold text
+    // Convert bold text (handle both ** and single *)
     html = html.replaceAllMapped(
       RegExp(r'\*\*(.+?)\*\*'),
       (match) => '<strong>${match.group(1)}</strong>',
     );
-
-    // Convert bullet points
     html = html.replaceAllMapped(
-      RegExp(r'^• (.+)$', multiLine: true),
-      (match) => '<li>${match.group(1)}</li>',
+      RegExp(r'\*([^*]+?)\*'),
+      (match) => '<em>${match.group(1)}</em>',
     );
 
-    // Wrap consecutive list items in ul tags
+    // Convert links - handle both with and without angle brackets
+    // Note: URLs should already be cleaned by _cleanMarkdownContent
     html = html.replaceAllMapped(
-      RegExp(r'(<li>.*?</li>\n?)+', multiLine: true),
-      (match) => '<ul>${match.group(0)}</ul>',
+      RegExp(r'\[([^\]]+?)\]\(<([^>]+?)>\)'),
+      (match) => '<a href="${match.group(2)?.trim()}">${match.group(1)}</a>',
     );
-
-    // Convert links (after fixing them above)
     html = html.replaceAllMapped(
       RegExp(r'\[([^\]]+?)\]\(([^)]+?)\)'),
       (match) => '<a href="${match.group(2)?.trim()}">${match.group(1)}</a>',
     );
 
-    // Convert line breaks
-    html = html.replaceAll('\n\n', '<br>');
+    // Convert bullet points (handle different bullet characters)
+    html = html.replaceAllMapped(
+      RegExp(r'^[•·-] (.+)$', multiLine: true),
+      (match) => '<li>${match.group(1)}</li>',
+    );
+
+    // Wrap consecutive list items in ul tags
+    html = html.replaceAllMapped(
+      RegExp(r'(<li>.*?</li>\s*)+', multiLine: true, dotAll: true),
+      (match) => '<ul>${match.group(0)}</ul>',
+    );
+
+    // Convert horizontal rules
+    html = html.replaceAll(RegExp(r'^---+$', multiLine: true), '<hr>');
+
+    // Handle line breaks more intelligently
+    // Preserve double line breaks as paragraph breaks
+    html = html.replaceAll('\n\n', '<br><br>');
+    // Single line breaks after certain elements
+    html = html.replaceAllMapped(
+      RegExp(r'(</h[1-6]>|</ul>|<hr>)\n'),
+      (match) => match.group(1)! + '<br>',
+    );
+    // Convert remaining single line breaks
     html = html.replaceAll('\n', '<br>');
 
     return html;
@@ -448,53 +463,111 @@ class _ChatInterfaceState extends State<ChatInterface> {
           child: Column(
             children: [
               // New Chat button at top right
+              // Navigation buttons at top right
               Padding(
                 padding: const EdgeInsets.only(top: 16, right: 16, left: 16),
                 child: Align(
                   alignment: Alignment.topRight,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.pop(context);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Icon(Icons.add, color: Colors.white, size: 18),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'New Chat',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // Settings button
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SettingsPage(),
                                     ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.settings, color: Colors.white, size: 18),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Settings',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      // New Chat button
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  Navigator.pop(context);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      Icon(Icons.add, color: Colors.white, size: 18),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'New Chat',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

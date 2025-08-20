@@ -142,8 +142,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     children: [
                       // Logo with glow effect
                       Container(
-                        width: 180,
-                        height: 180,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           boxShadow: [
@@ -155,9 +155,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ],
                         ),
                         child: Image.asset(
-                          'lib/Assets/quantisage_transparent1.PNG',
-                          width: 180,
-                          height: 180,
+                          'assets/quantisage_transparent1.PNG',
+                          width: 50,
+                          height: 50,
                           fit: BoxFit.contain,
                         ),
                       ),

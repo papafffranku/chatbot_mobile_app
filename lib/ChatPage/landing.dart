@@ -133,11 +133,6 @@ class SuggestionsPage extends StatelessWidget {
                         ),
                         _buildSuggestionTile(
                           context,
-                          Icons.directions_car,
-                          "Car rental tips for first-time travelers?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
                           Icons.beach_access,
                           "Best beaches in Thailand for families?",
                         ),
@@ -443,7 +438,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 decoration: InputDecoration(
                                   hintText: 'Where shall we travel?',
                                   hintStyle: TextStyle(
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.black.withOpacity(0.45),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -454,7 +449,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                   ),
                                   prefixIcon: Icon(
                                     Icons.explore,
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.black.withOpacity(0.45),
                                     size: 22,
                                   ),
                                 ),
