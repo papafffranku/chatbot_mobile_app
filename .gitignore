@@ -97,6 +97,3 @@ lib/generated_plugin_registrant.dart
 
 # Coverage
 coverage/
-
-# Keystore files
-upload-keystore.jks
