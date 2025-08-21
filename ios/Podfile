@@ -10,13 +10,13 @@ project 'Runner', {
 }
 
 def flutter_root
-  generated_xconfig = ENV['FLUTTER_ROOT'] + '/packages/flutter_tools/bin/xcode_backend.sh'
+  generated_xconfig = File.expand_path(File.join('..', 'ios', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xconfig)
     raise "#{generated_xconfig} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
   end
 
   File.foreach(generated_xconfig) do |line|
-    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    matches = line.match(/FLUTTER_ROOT=(.*)/)
     return matches[1].strip if matches
   end
   raise "FLUTTER_ROOT not found in #{generated_xconfig}. Try deleting Generated.xcconfig, then run flutter pub get"
