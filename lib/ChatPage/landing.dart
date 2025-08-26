@@ -4,6 +4,7 @@ import 'dart:ui'; // For ImageFilter
 import 'chat_interface.dart'; // Import the chat interface
 import '../theme/app_theme.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
+import '../Settings/SettingsPage.dart';
 // ignore_for_file: prefer_const_constructors
 
 class FadeScalePageRoute<T> extends PageRouteBuilder<T> {
@@ -260,6 +261,61 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
         child: SafeArea(
           child: Stack(
             children: [
+              // Settings button at top right
+              Positioned(
+                top: 16,
+                right: 16,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SettingsPage(),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.settings, color: Colors.white, size: 18),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Settings',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // Main content
               Align(
                 alignment: Alignment.bottomCenter,

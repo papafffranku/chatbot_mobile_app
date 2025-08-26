@@ -50,6 +50,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _logoFadeAnimation;
 
   @override
   void initState() {
@@ -64,24 +65,35 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
     
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
     
+    // Fade animation for Quantisage logo and text
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+      curve: const Interval(0.0, 0.4, curve: Curves.easeIn),
     ));
     
+    // Scale animation for main app logo
     _scaleAnimation = Tween<double>(
-      begin: 0.8,
+      begin: 0.5,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOutCubic,
+      curve: const Interval(0.3, 0.7, curve: Curves.elasticOut),
+    ));
+    
+    // Delayed fade for main app logo
+    _logoFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.3, 0.6, curve: Curves.easeIn),
     ));
     
     _animationController.forward();
@@ -116,82 +128,121 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0a0b1e), // Match your deep space blue
+      backgroundColor: const Color(0xFF0a0b1e), // Dark background matching settings
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0a0b1e), // Deep space blue
-              Color(0xFF4c1d95), // Rich purple
-              Color(0xFF1e293b), // Dark slate
-            ],
-          ),
-        ),
-        child: Center(
+        color: const Color(0xFF0a0b1e), // Solid dark color instead of gradient
+        child: SafeArea(
           child: AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo with glow effect
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3b82f6).withOpacity(0.3),
-                              blurRadius: 40,
-                              spreadRadius: 10,
+              return Column(
+                children: [
+                  // Quantisage logo at the top
+                  Padding(
+                    padding: const EdgeInsets.only(top: 60),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Column(
+                        children: [
+                          // Quantisage logo with glow
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF3b82f6).withOpacity(0.3),
+                                  blurRadius: 30,
+                                  spreadRadius: 5,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Image.asset(
-                          'assets/quantisage_transparent1.PNG',
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.contain,
-                        ),
+                            child: Image.asset(
+                              'assets/quantisage_transparent1.PNG',
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Quantisage text
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [
+                                Color(0xFF3b82f6), // Sky blue
+                                Color(0xFF06b6d4), // Cyan
+                              ],
+                            ).createShader(bounds),
+                            child: const Text(
+                              'QUANTISAGE',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 2,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                      // Quantisage text with gradient
-                      ShaderMask(
-                        shaderCallback: (bounds) => const LinearGradient(
-                          colors: [
-                            Color(0xFF3b82f6), // Sky blue
-                            Color(0xFF06b6d4), // Cyan
-                          ],
-                        ).createShader(bounds),
-                        child: const Text(
-                          'QUANTISAGE',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 3,
-                            color: Colors.white,
+                    ),
+                  ),
+                  
+                  // Expanded to center the main logo
+                  Expanded(
+                    child: Center(
+                      child: FadeTransition(
+                        opacity: _logoFadeAnimation,
+                        child: ScaleTransition(
+                          scale: _scaleAnimation,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Main app logo with glow effect
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF5DADE2).withOpacity(0.4),
+                                      blurRadius: 50,
+                                      spreadRadius: 10,
+                                    ),
+                                  ],
+                                ),
+                                child: Image.asset(
+                                  'assets/zippy_resized_ios.png',
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                'Travel Assistant',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white.withOpacity(0.7),
+                                  letterSpacing: 1,
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Travel Assistant',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white.withOpacity(0.7),
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 48),
-                      // Loading indicator
-                      SizedBox(
+                    ),
+                  ),
+                  
+                  // Loading indicator at bottom
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 60),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
@@ -201,9 +252,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               );
             },
           ),

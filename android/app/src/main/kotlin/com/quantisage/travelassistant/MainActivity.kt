@@ -1,4 +1,4 @@
-package quantisageai.com.chatbot_mobile_app
+﻿package com.quantisage.travelassistant
 
 import io.flutter.embedding.android.FlutterActivity
 
