@@ -213,6 +213,10 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
   String newMessage = '';
   final TextEditingController _textController = TextEditingController();
   static const double _kInputBarHeight = 84.0;
+  double kHomeIndicatorGap = 6.0;
+  final GlobalKey _inputBarKey = GlobalKey();
+  double? _measuredBarHeight;
+
 
   void _navigateToChat(String message) {
     if (message.trim().isNotEmpty) {
@@ -243,6 +247,20 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+
+    // Measure the actual input bar height (once it’s laid out)
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    final h = _inputBarKey.currentContext?.size?.height;
+    if (h != null && (_measuredBarHeight == null || (h - _measuredBarHeight!).abs() > 0.5)) {
+      setState(() => _measuredBarHeight = h);
+    }
+  });
+
+  final double kb = media.viewInsets.bottom;                 // keyboard height
+  final double barH = _measuredBarHeight ?? _kInputBarHeight; // fallback until measured
+  final double bottomGap = kb + barH + 20.0;                  // space for suggestions above the bar
+
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -321,7 +339,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                     ),
                   ),
                 ),
-            
+              
                 // Main content (bottom-anchored, above input bar)
               Align(
                 alignment: Alignment.bottomCenter,
@@ -330,7 +348,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                     left: 16,
                     right: 16,
                     // leave room for the input bar + safe area + a little breathing space
-                    bottom: MediaQuery.of(context).padding.bottom + _kInputBarHeight + 12,
+                    bottom: bottomGap,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -482,8 +500,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
                         child: Container(
-                          // no extra bottom padding here
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          key: _inputBarKey,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.05),
                             borderRadius: const BorderRadius.only(
@@ -496,76 +513,84 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                               right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Container(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              16,
+                              20,
+                              media.viewPadding.bottom > 0 ? kHomeIndicatorGap : 16,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(25),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.15),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: TextField(
+                                      controller: _textController,
+                                      onChanged: (v) => setState(() => newMessage = v),
+                                      onSubmitted: _navigateToChat,
+                                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                                      decoration: InputDecoration(
+                                        hintText: 'Where shall we travel?',
+                                        hintStyle: TextStyle(
+                                          color: Colors.black.withOpacity(0.45),
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 12,
+                                        ),
+                                        prefixIcon: Icon(
+                                          Icons.explore,
+                                          color: Colors.black.withOpacity(0.45),
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(25),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.15),
-                                      width: 1,
+                                    gradient: const LinearGradient(
+                                      begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                      colors: [AppTheme.bubbleUser, AppTheme.accent],
                                     ),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.accent.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
                                   ),
-                                  child: TextField(
-                                    controller: _textController,
-                                    onChanged: (v) => setState(() => newMessage = v),
-                                    onSubmitted: _navigateToChat,
-                                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                                    decoration: InputDecoration(
-                                      hintText: 'Where shall we travel?',
-                                      hintStyle: TextStyle(
-                                        color: Colors.black.withOpacity(0.45),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                      border: InputBorder.none,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 12,
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.explore,
-                                        color: Colors.black.withOpacity(0.45),
-                                        size: 22,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(50),
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        _navigateToChat(_textController.text);
+                                      },
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(12),
+                                        child: Icon(Icons.send, color: Colors.white, size: 24),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                                    colors: [AppTheme.bubbleUser, AppTheme.accent],
-                                  ),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.accent.withOpacity(0.3),
-                                      blurRadius: 8,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(50),
-                                    onTap: () {
-                                      HapticFeedback.lightImpact();
-                                      _navigateToChat(_textController.text);
-                                    },
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(12),
-                                      child: Icon(Icons.send, color: Colors.white, size: 24),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
