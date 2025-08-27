@@ -212,6 +212,7 @@ class backgroundCanvas extends StatefulWidget {
 class _backgroundCanvasState extends State<backgroundCanvas> {
   String newMessage = '';
   final TextEditingController _textController = TextEditingController();
+  static const double _kInputBarHeight = 84.0;
 
   void _navigateToChat(String message) {
     if (message.trim().isNotEmpty) {
@@ -325,7 +326,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                   left: 16,
                   right: 16,
                   // leave room for the input bar + safe area + a little breathing space
-                  bottom: MediaQuery.of(context).padding.bottom + 140,
+                  bottom: MediaQuery.of(context).padding.bottom + _kInputBarHeight + 12,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -463,13 +464,12 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
               ),
             ),
 
-
-              
-              // Input area positioned at the bottom
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SizedBox(
+                height: _kInputBarHeight + MediaQuery.of(context).padding.bottom,
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(30),
@@ -481,8 +481,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                       padding: EdgeInsets.only(
                         left: 20,
                         right: 20,
-                        top: 20,
-                        bottom: MediaQuery.of(context).padding.bottom + 20,
+                        top: 12, // smaller/top padding so the bar stays compact
+                        bottom: MediaQuery.of(context).padding.bottom, // <-- no extra +20
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.05),
@@ -491,18 +491,9 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                           topRight: Radius.circular(30),
                         ),
                         border: Border(
-                          top: BorderSide(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                          left: BorderSide(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                          right: BorderSide(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
+                          top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                          left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                          right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
                         ),
                       ),
                       child: Row(
@@ -519,12 +510,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                               ),
                               child: TextField(
                                 controller: _textController,
-                                onChanged: (value) {
-                                  setState(() {
-                                    newMessage = value;
-                                  });
-                                },
-                                onSubmitted: (value) => _navigateToChat(value),
+                                onChanged: (value) => setState(() => newMessage = value),
+                                onSubmitted: _navigateToChat,
                                 style: const TextStyle(color: Colors.white, fontSize: 16),
                                 decoration: InputDecoration(
                                   hintText: 'Where shall we travel?',
@@ -551,12 +538,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                           Container(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppTheme.bubbleUser,
-                                  AppTheme.accent,
-                                ],
+                                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                colors: [AppTheme.bubbleUser, AppTheme.accent],
                               ),
                               shape: BoxShape.circle,
                               boxShadow: [
@@ -575,13 +558,9 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                   HapticFeedback.lightImpact();
                                   _navigateToChat(_textController.text);
                                 },
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  child: const Icon(
-                                    Icons.send,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: Icon(Icons.send, color: Colors.white, size: 24),
                                 ),
                               ),
                             ),
@@ -592,6 +571,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                   ),
                 ),
               ),
+            ),
+
             ],
           ),
         ),
@@ -635,9 +616,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
               const SizedBox(width: 10),
             ],
             Expanded(
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
+              child: Text.rich(
+                TextSpan(
                   children: [
                     TextSpan(
                       text: boldText,
@@ -659,6 +639,9 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                     ),
                   ],
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
