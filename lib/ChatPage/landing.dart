@@ -322,8 +322,6 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                   ),
                 ),
             
-                // Main content
-                // Main content (top-anchored)
                 // Main content (bottom-anchored, above input bar)
               Align(
                 alignment: Alignment.bottomCenter,
@@ -395,10 +393,6 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                         builder: (context, constraints) {
                           final w = constraints.maxWidth;
             
-                          // Columns:
-                          // - Ultra-narrow fallback (rare): 1
-                          // - Phones (portrait/most landscape): 2
-                          // - Large tablets / wide: 3
                           int crossAxisCount;
                           if (w >= 1100) {
                             crossAxisCount = 3;          // big iPad / desktop-like widths
@@ -469,15 +463,17 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                   ),
                 ),
               ),
-            
-              // Input area stuck to the very bottom
-              Padding(
-                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: SafeArea(
-                    top: false, 
-                    bottom: true,   
+              // Input area absolutely stuck to the very bottom (ignores safe-area)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeBottom: true, // <- strips any inherited SafeArea/padding at bottom
+                  child: Padding(
+                    // Lift exactly by keyboard height (0 when closed)
+                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(30),
@@ -486,6 +482,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
                         child: Container(
+                          // no extra bottom padding here
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.05),
@@ -513,7 +510,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                   ),
                                   child: TextField(
                                     controller: _textController,
-                                    onChanged: (value) => setState(() => newMessage = value),
+                                    onChanged: (v) => setState(() => newMessage = v),
                                     onSubmitted: _navigateToChat,
                                     style: const TextStyle(color: Colors.white, fontSize: 16),
                                     decoration: InputDecoration(
@@ -541,8 +538,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                               Container(
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
+                                    begin: Alignment.topLeft, end: Alignment.bottomRight,
                                     colors: [AppTheme.bubbleUser, AppTheme.accent],
                                   ),
                                   shape: BoxShape.circle,
@@ -577,6 +573,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                   ),
                 ),
               ),
+
             
             
               ],
