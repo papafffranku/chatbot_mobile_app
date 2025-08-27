@@ -369,6 +369,68 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                         ),
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Responsive columns: phones=1, small tablets=2, large tablets=3 (optional)
+                          int crossAxisCount;
+                          if (constraints.maxWidth >= 1100) {
+                            crossAxisCount = 3;
+                          } else if (constraints.maxWidth >= 700) {
+                            crossAxisCount = 2;
+                          } else {
+                            crossAxisCount = 1;
+                          }
+
+                          return GridView.count(
+                            crossAxisCount: crossAxisCount,
+                            // Important: don’t let this grid try to scroll; let the page scroll instead
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            // Wider than tall “pills”; tweak 2.6–3.2 to taste per design
+                            childAspectRatio: 2.8,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _navigateToChat("Give me documents for a US Visa?"),
+                                child: centeredTextContainer(
+                                  boldText: "Give me documents",
+                                  normalText: " for a US Visa?",
+                                  icon: const Icon(Icons.description, color: Colors.white, size: 20),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
+                                child: centeredTextContainer(
+                                  boldText: "How long does it take to process",
+                                  normalText: " a UK work visa?",
+                                  icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
+                                child: centeredTextContainer(
+                                  boldText: "Give me flights to London",
+                                  normalText: " if I want to leave at 20th October.",
+                                  icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
+                                child: centeredTextContainer(
+                                  boldText: "Give me hotel options in Athens",
+                                  normalText: " from 16th May to 20th May 2026.",
+                                  icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+
                     Container(
                       height: screenSize.height*0.25,
                       color: Colors.transparent,
@@ -383,7 +445,6 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 child: centeredTextContainer(
                                   boldText: "Give me documents",
                                   normalText: " for a US Visa?",
-                                  size: screenSize.width,
                                   icon: const Icon(Icons.description, color: Colors.white, size: 20),
                                 ),
                               ),
@@ -392,7 +453,6 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 child: centeredTextContainer(
                                   boldText: "How long does it take to process",
                                   normalText: " a UK work visa?",
-                                  size: screenSize.width,
                                   icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
                                 ),
                               ),
@@ -406,7 +466,6 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 child: centeredTextContainer(
                                   boldText: "Give me flights to London",
                                   normalText: " if I want to leave at 20th October.",
-                                  size: screenSize.width,
                                   icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
                                 ),
                               ),
@@ -415,7 +474,6 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 child: centeredTextContainer(
                                   boldText: "Give me hotel options in Athens",
                                   normalText: " from 16th May to 20th May 2026.",
-                                  size: screenSize.width,
                                   icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
                                 ),
                               ),
@@ -567,64 +625,71 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
   Widget centeredTextContainer({
     required String boldText,
     required String normalText,
-    required double size,
     Widget? icon,
   }) {
-    return Container(
-      width: size * 0.45,
-      height: size * 0.2,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.panel.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-          width: 1,
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        constraints: const BoxConstraints(
+          minHeight: 64,   // base touch target
+          maxHeight: 100,  // keep it from getting too tall on huge screens
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.panel.withOpacity(0.85),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.05),
+            width: 1,
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (icon != null) ...[
-            icon,
-            const SizedBox(width: 8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
           ],
-          Expanded(
-            child: RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: boldText,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              icon,
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: boldText,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: normalText,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white70, // muted white
+                    TextSpan(
+                      text: normalText,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white70,
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
 
   @override
   void dispose() {
