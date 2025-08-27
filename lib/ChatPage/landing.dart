@@ -426,9 +426,10 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
             
                           // Keep pills looking nice per column count
                           final double aspect =
-                              (crossAxisCount == 3) ? 3.2 :
-                              (crossAxisCount == 2) ? 2.8 :
-                              2.4;
+                            (crossAxisCount == 3) ? 2.4 :
+                            (crossAxisCount == 2) ? 1.9 :
+                            1.6; // lower ratio => taller tiles (room for 3 lines)
+
             
                           return Align(
                             alignment: Alignment.topCenter,
@@ -618,7 +619,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
       child: Container(
         constraints: const BoxConstraints(
           minHeight: 64,   // base touch target
-          maxHeight: 100,  // keep it from getting too tall on huge screens
+          maxHeight: 140,  // keep it from getting too tall on huge screens
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
@@ -637,7 +638,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
           ],
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             if (icon != null) ...[
               icon,
@@ -667,8 +668,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                     ),
                   ],
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
+                textAlign: TextAlign.start,
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
