@@ -386,14 +386,26 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                     // Suggestions grid (centered, responsive)
                     LayoutBuilder(
                       builder: (context, constraints) {
+                        final w = constraints.maxWidth;
+
+                        // Columns:
+                        // - Ultra-narrow fallback (rare): 1
+                        // - Phones (portrait/most landscape): 2
+                        // - Large tablets / wide: 3
                         int crossAxisCount;
-                        if (constraints.maxWidth >= 1100) {
-                          crossAxisCount = 3;
-                        } else if (constraints.maxWidth >= 700) {
-                          crossAxisCount = 2;
+                        if (w >= 1100) {
+                          crossAxisCount = 3;          // big iPad / desktop-like widths
+                        } else if (w >= 340) {
+                          crossAxisCount = 2;          // phones (default)
                         } else {
-                          crossAxisCount = 1;
+                          crossAxisCount = 1;          // very narrow edge case
                         }
+
+                        // Keep pills looking nice per column count
+                        final double aspect =
+                            (crossAxisCount == 3) ? 3.2 :
+                            (crossAxisCount == 2) ? 2.8 :
+                            2.4;
 
                         return Align(
                           alignment: Alignment.topCenter,
@@ -405,7 +417,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                               physics: const NeverScrollableScrollPhysics(),
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
-                              childAspectRatio: 2.8,
+                              childAspectRatio: aspect,
                               children: [
                                 GestureDetector(
                                   onTap: () => _navigateToChat("Give me documents for a US Visa?"),
@@ -444,6 +456,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                           ),
                         );
                       },
+
                     ),
                   ],
                 ),
