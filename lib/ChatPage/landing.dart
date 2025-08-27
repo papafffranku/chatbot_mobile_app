@@ -464,12 +464,11 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
               ),
             ),
 
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SizedBox(
-                height: _kInputBarHeight + MediaQuery.of(context).padding.bottom,
+            // Input area stuck to the very bottom
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SafeArea(
+                top: false, // only respect bottom inset
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(30),
@@ -478,12 +477,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
                     child: Container(
-                      padding: EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        top: 12, // smaller/top padding so the bar stays compact
-                        bottom: MediaQuery.of(context).padding.bottom, // <-- no extra +20
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.05),
                         borderRadius: const BorderRadius.only(
@@ -538,7 +532,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                           Container(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                                 colors: [AppTheme.bubbleUser, AppTheme.accent],
                               ),
                               shape: BoxShape.circle,
@@ -572,6 +567,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                 ),
               ),
             ),
+
 
             ],
           ),
