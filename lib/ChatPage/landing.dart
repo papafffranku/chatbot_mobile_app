@@ -317,57 +317,60 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
 
               // Main content
               // Main content (top-anchored)
-              Positioned.fill(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    top: 88, // space below the Settings button / SafeArea
-                    bottom: MediaQuery.of(context).padding.bottom + 160, // leave room for input bar
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Centered "More suggestions" chip
-                      Center(
-                        child: GestureDetector(
-                          onTap: _openSuggestions,
-                          child: Hero(
-                            tag: 'suggestions-hero',
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.bubbleUser.withOpacity(0.7),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.1),
-                                      width: 1,
-                                    ),
+              // Main content (bottom-anchored, above input bar)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  // leave room for the input bar + safe area + a little breathing space
+                  bottom: MediaQuery.of(context).padding.bottom + 140,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Centered "More suggestions" chip
+                    Center(
+                      child: GestureDetector(
+                        onTap: _openSuggestions,
+                        child: Hero(
+                          tag: 'suggestions-hero',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppTheme.bubbleUser.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.1),
+                                    width: 1,
                                   ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(10.0),
-                                    child: RichText(
-                                      textAlign: TextAlign.center,
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: "More suggestions ",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.white,
-                                            ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: RichText(
+                                    textAlign: TextAlign.center,
+                                    text: const TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: "More suggestions ",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white,
                                           ),
-                                          WidgetSpan(
-                                            alignment: PlaceholderAlignment.middle,
-                                            child: Icon(
-                                              Icons.arrow_forward_ios,
-                                              color: Colors.white,
-                                              size: 16,
-                                            ),
+                                        ),
+                                        WidgetSpan(
+                                          alignment: PlaceholderAlignment.middle,
+                                          child: Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: Colors.white,
+                                            size: 16,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -376,78 +379,77 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                           ),
                         ),
                       ),
+                    ),
 
-                      const SizedBox(height: 12),
+                    const SizedBox(height: 12),
 
-                      // Suggestions grid (centered, responsive)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            int crossAxisCount;
-                            if (constraints.maxWidth >= 1100) {
-                              crossAxisCount = 3;
-                            } else if (constraints.maxWidth >= 700) {
-                              crossAxisCount = 2;
-                            } else {
-                              crossAxisCount = 1;
-                            }
+                    // Suggestions grid (centered, responsive)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        int crossAxisCount;
+                        if (constraints.maxWidth >= 1100) {
+                          crossAxisCount = 3;
+                        } else if (constraints.maxWidth >= 700) {
+                          crossAxisCount = 2;
+                        } else {
+                          crossAxisCount = 1;
+                        }
 
-                            return Align(
-                              alignment: Alignment.topCenter,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 1000), // keep grid centered on big iPads
-                                child: GridView.count(
-                                  crossAxisCount: crossAxisCount,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  mainAxisSpacing: 12,
-                                  crossAxisSpacing: 12,
-                                  childAspectRatio: 2.8,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () => _navigateToChat("Give me documents for a US Visa?"),
-                                      child: centeredTextContainer(
-                                        boldText: "Give me documents",
-                                        normalText: " for a US Visa?",
-                                        icon: const Icon(Icons.description, color: Colors.white, size: 20),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
-                                      child: centeredTextContainer(
-                                        boldText: "How long does it take to process",
-                                        normalText: " a UK work visa?",
-                                        icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
-                                      child: centeredTextContainer(
-                                        boldText: "Give me flights to London",
-                                        normalText: " if I want to leave at 20th October.",
-                                        icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
-                                      child: centeredTextContainer(
-                                        boldText: "Give me hotel options in Athens",
-                                        normalText: " from 16th May to 20th May 2026.",
-                                        icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
-                                      ),
-                                    ),
-                                  ],
+                        return Align(
+                          alignment: Alignment.topCenter,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1000),
+                            child: GridView.count(
+                              crossAxisCount: crossAxisCount,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 2.8,
+                              children: [
+                                GestureDetector(
+                                  onTap: () => _navigateToChat("Give me documents for a US Visa?"),
+                                  child: centeredTextContainer(
+                                    boldText: "Give me documents",
+                                    normalText: " for a US Visa?",
+                                    icon: const Icon(Icons.description, color: Colors.white, size: 20),
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                                GestureDetector(
+                                  onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
+                                  child: centeredTextContainer(
+                                    boldText: "How long does it take to process",
+                                    normalText: " a UK work visa?",
+                                    icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
+                                  child: centeredTextContainer(
+                                    boldText: "Give me flights to London",
+                                    normalText: " if I want to leave at 20th October.",
+                                    icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
+                                  child: centeredTextContainer(
+                                    boldText: "Give me hotel options in Athens",
+                                    normalText: " from 16th May to 20th May 2026.",
+                                    icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
+            ),
+
 
               
               // Input area positioned at the bottom
