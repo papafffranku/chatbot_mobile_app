@@ -260,6 +260,10 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
   final double kb = media.viewInsets.bottom;                 // keyboard height
   final double barH = _measuredBarHeight ?? _kInputBarHeight; // fallback until measured
   final double bottomGap = kb + barH + 20.0;                  // space for suggestions above the bar
+  final bool keyboardOpen = kb > 0;
+  final double contentBottomPad = keyboardOpen
+      ? 16.0                                   // keyboard up → normal inner padding
+      : (media.viewPadding.bottom + kHomeIndicatorGap); // keyboard down → safe area + small gap
 
 
     return Scaffold(
@@ -514,12 +518,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                             ),
                           ),
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(
-                              20,
-                              16,
-                              20,
-                              media.viewPadding.bottom > 0 ? kHomeIndicatorGap : 16,
-                            ),
+                            padding: EdgeInsets.fromLTRB(20, 16, 20, contentBottomPad),
                             child: Row(
                               children: [
                                 Expanded(
