@@ -465,6 +465,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                       boldText: "Give me flights to London",
                                       normalText: " if I want to leave at 20th October.",
                                       icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                                      maxLines: 4,
                                     ),
                                   ),
                                   GestureDetector(
@@ -473,6 +474,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                       boldText: "Give me hotel options in Athens",
                                       normalText: " from 16th May to 20th May 2026.",
                                       icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                                      maxLines: 4,
                                     ),
                                   ),
                                 ],
@@ -613,13 +615,14 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
     required String boldText,
     required String normalText,
     Widget? icon,
+    int maxLines = 3, // default: 3 lines for top tiles
   }) {
     return Material(
       color: Colors.transparent,
       child: Container(
-        constraints: const BoxConstraints(
+        constraints: BoxConstraints(
           minHeight: 64,   // base touch target
-          maxHeight: 140,  // keep it from getting too tall on huge screens
+          maxHeight: maxLines >= 4 ? 160 : 120, // taller when 4 lines
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
@@ -669,7 +672,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                   ],
                 ),
                 textAlign: TextAlign.start,
-                maxLines: 3,
+                maxLines: maxLines,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
