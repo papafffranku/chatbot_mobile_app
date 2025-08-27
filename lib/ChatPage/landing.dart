@@ -245,6 +245,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppTheme.bg,
       body: AnimatedMeshGradient(
         colors: const [
@@ -259,54 +260,60 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
           speed: 3,
         ),
         child: SafeArea(
-          child: Stack(
-            children: [
-              // Settings button at top right
-              Positioned(
-                top: 16,
-                right: 16,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
+          top: true,
+          bottom: false,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Stack(
+              children: [
+                // Settings button at top right
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
                           borderRadius: BorderRadius.circular(20),
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SettingsPage(),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.settings, color: Colors.white, size: 18),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Settings',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SettingsPage(),
                                 ),
-                              ],
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.settings, color: Colors.white, size: 18),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Settings',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -314,64 +321,64 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                     ),
                   ),
                 ),
-              ),
-
-              // Main content
-              // Main content (top-anchored)
-              // Main content (bottom-anchored, above input bar)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  // leave room for the input bar + safe area + a little breathing space
-                  bottom: MediaQuery.of(context).padding.bottom + _kInputBarHeight + 12,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Centered "More suggestions" chip
-                    Center(
-                      child: GestureDetector(
-                        onTap: _openSuggestions,
-                        child: Hero(
-                          tag: 'suggestions-hero',
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppTheme.bubbleUser.withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
-                                    width: 1,
+            
+                // Main content
+                // Main content (top-anchored)
+                // Main content (bottom-anchored, above input bar)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    // leave room for the input bar + safe area + a little breathing space
+                    bottom: MediaQuery.of(context).padding.bottom + _kInputBarHeight + 12,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Centered "More suggestions" chip
+                      Center(
+                        child: GestureDetector(
+                          onTap: _openSuggestions,
+                          child: Hero(
+                            tag: 'suggestions-hero',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.bubbleUser.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.1),
+                                      width: 1,
+                                    ),
                                   ),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: RichText(
-                                    textAlign: TextAlign.center,
-                                    text: const TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: "More suggestions ",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: RichText(
+                                      textAlign: TextAlign.center,
+                                      text: const TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: "More suggestions ",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                        WidgetSpan(
-                                          alignment: PlaceholderAlignment.middle,
-                                          child: Icon(
-                                            Icons.arrow_forward_ios,
-                                            color: Colors.white,
-                                            size: 16,
+                                          WidgetSpan(
+                                            alignment: PlaceholderAlignment.middle,
+                                            child: Icon(
+                                              Icons.arrow_forward_ios,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -380,196 +387,200 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                           ),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Suggestions grid (centered, responsive)
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final w = constraints.maxWidth;
-
-                        // Columns:
-                        // - Ultra-narrow fallback (rare): 1
-                        // - Phones (portrait/most landscape): 2
-                        // - Large tablets / wide: 3
-                        int crossAxisCount;
-                        if (w >= 1100) {
-                          crossAxisCount = 3;          // big iPad / desktop-like widths
-                        } else if (w >= 340) {
-                          crossAxisCount = 2;          // phones (default)
-                        } else {
-                          crossAxisCount = 1;          // very narrow edge case
-                        }
-
-                        // Keep pills looking nice per column count
-                        final double aspect =
-                            (crossAxisCount == 3) ? 3.2 :
-                            (crossAxisCount == 2) ? 2.8 :
-                            2.4;
-
-                        return Align(
-                          alignment: Alignment.topCenter,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 1000),
-                            child: GridView.count(
-                              crossAxisCount: crossAxisCount,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: aspect,
-                              children: [
-                                GestureDetector(
-                                  onTap: () => _navigateToChat("Give me documents for a US Visa?"),
-                                  child: centeredTextContainer(
-                                    boldText: "Give me documents",
-                                    normalText: " for a US Visa?",
-                                    icon: const Icon(Icons.description, color: Colors.white, size: 20),
+            
+                      const SizedBox(height: 12),
+            
+                      // Suggestions grid (centered, responsive)
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final w = constraints.maxWidth;
+            
+                          // Columns:
+                          // - Ultra-narrow fallback (rare): 1
+                          // - Phones (portrait/most landscape): 2
+                          // - Large tablets / wide: 3
+                          int crossAxisCount;
+                          if (w >= 1100) {
+                            crossAxisCount = 3;          // big iPad / desktop-like widths
+                          } else if (w >= 340) {
+                            crossAxisCount = 2;          // phones (default)
+                          } else {
+                            crossAxisCount = 1;          // very narrow edge case
+                          }
+            
+                          // Keep pills looking nice per column count
+                          final double aspect =
+                              (crossAxisCount == 3) ? 3.2 :
+                              (crossAxisCount == 2) ? 2.8 :
+                              2.4;
+            
+                          return Align(
+                            alignment: Alignment.topCenter,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 1000),
+                              child: GridView.count(
+                                crossAxisCount: crossAxisCount,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: aspect,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => _navigateToChat("Give me documents for a US Visa?"),
+                                    child: centeredTextContainer(
+                                      boldText: "Give me documents",
+                                      normalText: " for a US Visa?",
+                                      icon: const Icon(Icons.description, color: Colors.white, size: 20),
+                                    ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
-                                  child: centeredTextContainer(
-                                    boldText: "How long does it take to process",
-                                    normalText: " a UK work visa?",
-                                    icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
+                                  GestureDetector(
+                                    onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
+                                    child: centeredTextContainer(
+                                      boldText: "How long does it take to process",
+                                      normalText: " a UK work visa?",
+                                      icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
+                                    ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
-                                  child: centeredTextContainer(
-                                    boldText: "Give me flights to London",
-                                    normalText: " if I want to leave at 20th October.",
-                                    icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                                  GestureDetector(
+                                    onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
+                                    child: centeredTextContainer(
+                                      boldText: "Give me flights to London",
+                                      normalText: " if I want to leave at 20th October.",
+                                      icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                                    ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
-                                  child: centeredTextContainer(
-                                    boldText: "Give me hotel options in Athens",
-                                    normalText: " from 16th May to 20th May 2026.",
-                                    icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                                  GestureDetector(
+                                    onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
+                                    child: centeredTextContainer(
+                                      boldText: "Give me hotel options in Athens",
+                                      normalText: " from 16th May to 20th May 2026.",
+                                      icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Input area stuck to the very bottom
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                top: false, // only respect bottom inset
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
-                        ),
-                        border: Border(
-                          top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                          left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                          right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                        ),
+                          );
+                        },
+            
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(25),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.15),
-                                  width: 1,
-                                ),
-                              ),
-                              child: TextField(
-                                controller: _textController,
-                                onChanged: (value) => setState(() => newMessage = value),
-                                onSubmitted: _navigateToChat,
-                                style: const TextStyle(color: Colors.white, fontSize: 16),
-                                decoration: InputDecoration(
-                                  hintText: 'Where shall we travel?',
-                                  hintStyle: TextStyle(
-                                    color: Colors.black.withOpacity(0.45),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12,
-                                  ),
-                                  prefixIcon: Icon(
-                                    Icons.explore,
-                                    color: Colors.black.withOpacity(0.45),
-                                    size: 22,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [AppTheme.bubbleUser, AppTheme.accent],
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.accent.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50),
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  _navigateToChat(_textController.text);
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Icon(Icons.send, color: Colors.white, size: 24),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),
+            
+              // Input area stuck to the very bottom
+              Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SafeArea(
+                    top: false, 
+                    bottom: true,   
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.05),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
+                            ),
+                            border: Border(
+                              top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                              left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                              right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(25),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.15),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: TextField(
+                                    controller: _textController,
+                                    onChanged: (value) => setState(() => newMessage = value),
+                                    onSubmitted: _navigateToChat,
+                                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                                    decoration: InputDecoration(
+                                      hintText: 'Where shall we travel?',
+                                      hintStyle: TextStyle(
+                                        color: Colors.black.withOpacity(0.45),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 12,
+                                      ),
+                                      prefixIcon: Icon(
+                                        Icons.explore,
+                                        color: Colors.black.withOpacity(0.45),
+                                        size: 22,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [AppTheme.bubbleUser, AppTheme.accent],
+                                  ),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.accent.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(50),
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      _navigateToChat(_textController.text);
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: Icon(Icons.send, color: Colors.white, size: 24),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            
+            
+              ],
             ),
-
-
-            ],
           ),
         ),
       ),
