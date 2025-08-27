@@ -54,98 +54,108 @@ class SuggestionsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final media = MediaQuery.of(context);
 
-    return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.65), // dim overlay
-      body: Center(
-        child: Hero(
-          tag: 'suggestions-hero',
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: screenSize.width * 0.9,
-              height: screenSize.height * 0.7,
-              margin: EdgeInsets.all(screenSize.width * 0.05),
-              decoration: BoxDecoration(
-                color: AppTheme.panel, // was white
-                borderRadius: BorderRadius.circular(AppTheme.radius),
-                border: Border.all(color: Colors.white.withOpacity(0.06)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.35),
-                    blurRadius: 24,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Header with close
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'More Suggestions',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+    return MediaQuery(
+      data: media.copyWith(
+        textScaler: media.textScaler.clamp(),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.black.withOpacity(0.65), // dim overlay
+        body: Center(
+          child: Hero(
+            tag: 'suggestions-hero',
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: screenSize.width * 0.9,
+                height: screenSize.height * 0.7,
+                margin: EdgeInsets.all(screenSize.width * 0.05),
+                decoration: BoxDecoration(
+                  color: AppTheme.panel, // was white
+                  borderRadius: BorderRadius.circular(AppTheme.radius),
+                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.35),
+                      blurRadius: 24,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Header with close
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Row(
+                        children: [
+                          Expanded( // <-- let the title shrink/ellipsize
+                            child: Text(
+                              'More Suggestions',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white70),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
+                          IconButton(
+                            padding: EdgeInsets.zero, // <-- keep the button compact
+                            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                            icon: const Icon(Icons.close, color: Colors.white70),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-
-                  // Suggestions list
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      children: [
-                        _buildSuggestionTile(
-                          context,
-                          Icons.language,
-                          "What are the visa requirements for Japan?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.attach_money,
-                          "How much does a Schengen visa cost?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.schedule,
-                          "Best time to visit New Zealand?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.local_hospital,
-                          "Travel insurance requirements for Europe?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.restaurant,
-                          "Top restaurants in Paris with vegetarian options?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.beach_access,
-                          "Best beaches in Thailand for families?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.hiking,
-                          "Hiking trails in Switzerland for beginners?",
-                        ),
-                      ],
+                    // Suggestions list
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        children: [
+                          _buildSuggestionTile(
+                            context,
+                            Icons.language,
+                            "What are the visa requirements for Japan?",
+                          ),
+                          _buildSuggestionTile(
+                            context,
+                            Icons.attach_money,
+                            "How much does a Schengen visa cost?",
+                          ),
+                          _buildSuggestionTile(
+                            context,
+                            Icons.schedule,
+                            "Best time to visit New Zealand?",
+                          ),
+                          _buildSuggestionTile(
+                            context,
+                            Icons.local_hospital,
+                            "Travel insurance requirements for Europe?",
+                          ),
+                          _buildSuggestionTile(
+                            context,
+                            Icons.restaurant,
+                            "Top restaurants in Paris with vegetarian options?",
+                          ),
+                          _buildSuggestionTile(
+                            context,
+                            Icons.beach_access,
+                            "Best beaches in Thailand for families?",
+                          ),
+                          _buildSuggestionTile(
+                            context,
+                            Icons.hiking,
+                            "Hiking trails in Switzerland for beginners?",
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -184,6 +194,8 @@ class SuggestionsPage extends StatelessWidget {
                 Expanded(
                   child: Text(
                     text,
+                    maxLines: 2,                      
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white, // was dark text
