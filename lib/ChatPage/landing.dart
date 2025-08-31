@@ -257,14 +257,12 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
     }
   });
 
-  final double kb = media.viewInsets.bottom;                 // keyboard height
-  final double barH = _measuredBarHeight ?? _kInputBarHeight; // fallback until measured
-  final double bottomGap = kb + barH + 20.0;                  // space for suggestions above the bar
-  final bool keyboardOpen = kb > 0;
-  final double contentBottomPad = keyboardOpen
-      ? 16.0                                   // keyboard up → normal inner padding
-      : (media.viewPadding.bottom + kHomeIndicatorGap); // keyboard down → safe area + small gap
-
+    final double kb = media.viewInsets.bottom;  // keyboard height
+    final double barH = _measuredBarHeight ?? _kInputBarHeight;
+    final double safeBottom = media.padding.bottom; // Safe area bottom
+    final double bottomGap = kb > 0 
+        ? kb + barH + 20.0  // When keyboard is open
+        : barH + safeBottom + 20.0;  // When keyboard is closed, include safe area
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -413,35 +411,18 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                       // Suggestions grid (centered, responsive)
                       LayoutBuilder(
                         builder: (context, constraints) {
-                          final w = constraints.maxWidth;
-            
-                          int crossAxisCount;
-                          if (w >= 1100) {
-                            crossAxisCount = 3;          // big iPad / desktop-like widths
-                          } else if (w >= 340) {
-                            crossAxisCount = 2;          // phones (default)
-                          } else {
-                            crossAxisCount = 1;          // very narrow edge case
-                          }
-            
-                          // Keep pills looking nice per column count
-                          final double aspect =
-                            (crossAxisCount == 3) ? 2.4 :
-                            (crossAxisCount == 2) ? 1.9 :
-                            1.6; // lower ratio => taller tiles (room for 3 lines)
-
-            
+                          
                           return Align(
                             alignment: Alignment.topCenter,
                             child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 1000),
+                              constraints: const BoxConstraints(maxWidth: 600),
                               child: GridView.count(
-                                crossAxisCount: crossAxisCount,
+                                crossAxisCount: 2, // Always 2 columns for consistency
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 mainAxisSpacing: 12,
                                 crossAxisSpacing: 12,
-                                childAspectRatio: aspect,
+                                childAspectRatio: 2.2,
                                 children: [
                                   GestureDetector(
                                     onTap: () => _navigateToChat("Give me documents for a US Visa?"),
@@ -482,46 +463,42 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                             ),
                           );
                         },
-            
                       ),
                     ],
                   ),
                 ),
               ),
-              // Input area absolutely stuck to the very bottom (ignores safe-area)
+              // Input area absolutely stuck to the very bottom
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeBottom: true, // <- strips any inherited SafeArea/padding at bottom
-                  child: Padding(
-                    // Lift exactly by keyboard height (0 when closed)
-                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
+                    child: Container(
+                      key: _inputBarKey,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.05),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                        border: Border(
+                          top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                          left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                          right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                        ),
                       ),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
-                        child: Container(
-                          key: _inputBarKey,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
-                            ),
-                            border: Border(
-                              top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                              left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                              right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(20, 16, 20, contentBottomPad),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
                             child: Row(
                               children: [
                                 Expanded(
@@ -564,7 +541,8 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 Container(
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
-                                      begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                       colors: [AppTheme.bubbleUser, AppTheme.accent],
                                     ),
                                     shape: BoxShape.circle,
@@ -594,15 +572,16 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                               ],
                             ),
                           ),
-                        ),
+                          // Handle safe area only for iOS
+                          SizedBox(
+                            height: MediaQuery.of(context).padding.bottom,
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ),
-
-            
-            
+              ),          
               ],
             ),
           ),
