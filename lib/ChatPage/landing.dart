@@ -48,110 +48,170 @@ class FadeScalePageRoute<T> extends PageRouteBuilder<T> {
 }
 
 // New page for suggestions
-class SuggestionsPage extends StatelessWidget {
+class SuggestionsPage extends StatefulWidget {
   const SuggestionsPage({super.key});
+
+  @override
+  State<SuggestionsPage> createState() => _SuggestionsPageState();
+}
+
+class _SuggestionsPageState extends State<SuggestionsPage> 
+    with SingleTickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeIn,
+    );
+    
+    // Start fade-in after Hero animation completes
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _fadeController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.65), // dim overlay
-      body: Center(
-        child: Hero(
-          tag: 'suggestions-hero',
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: screenSize.width * 0.9,
-              height: screenSize.height * 0.7,
-              margin: EdgeInsets.all(screenSize.width * 0.05),
-              decoration: BoxDecoration(
-                color: AppTheme.panel, // was white
-                borderRadius: BorderRadius.circular(AppTheme.radius),
-                border: Border.all(color: Colors.white.withOpacity(0.06)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.35),
-                    blurRadius: 24,
-                    spreadRadius: 2,
+    return WillPopScope(
+      onWillPop: () async => true,
+      child: GestureDetector(
+        onTap: () => Navigator.pop(context), // Tap outside to close
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            children: [
+              // Frosted glass backdrop
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.3), // Slight dark tint
                   ),
-                ],
+                ),
               ),
-              child: Column(
-                children: [
-                  // Header with close
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'More Suggestions',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+              Center(
+                child: GestureDetector(
+                  onTap: () {}, // Prevent tap-through
+                  child: Hero(
+                    tag: 'suggestions-hero',
+                    child: Material(
+                      color: Colors.transparent,
+                      child: Container(
+                        width: screenSize.width * 0.9,
+                        height: screenSize.height * 0.7,
+                        margin: EdgeInsets.all(screenSize.width * 0.05),
+                        decoration: BoxDecoration(
+                          color: AppTheme.panel.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(AppTheme.radius),
+                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 30,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppTheme.radius),
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'More Suggestions',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.close, color: Colors.white70),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: FadeTransition(
+                                  opacity: _fadeAnimation,
+                                  child: ListView(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    physics: const BouncingScrollPhysics(),
+                                    children: [
+                                  _buildSuggestionTile(
+                                    context,
+                                    Icons.language,
+                                    "What are the visa requirements for Japan?",
+                                  ),
+                                  _buildSuggestionTile(
+                                    context,
+                                    Icons.attach_money,
+                                    "How much does a Schengen visa cost?",
+                                  ),
+                                  _buildSuggestionTile(
+                                    context,
+                                    Icons.schedule,
+                                    "Best time to visit New Zealand?",
+                                  ),
+                                  _buildSuggestionTile(
+                                    context,
+                                    Icons.local_hospital,
+                                    "Travel insurance requirements for Europe?",
+                                  ),
+                                  _buildSuggestionTile(
+                                    context,
+                                    Icons.restaurant,
+                                    "Top restaurants in Paris with vegetarian options?",
+                                  ),
+                                  _buildSuggestionTile(
+                                    context,
+                                    Icons.beach_access,
+                                    "Best beaches in Thailand for families?",
+                                  ),
+                                  _buildSuggestionTile(
+                                    context,
+                                    Icons.hiking,
+                                    "Hiking trails in Switzerland for beginners?",
+                                  ),
+                                                                ],
+                                                              ),
+                                ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white70),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-
-                  // Suggestions list
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      children: [
-                        _buildSuggestionTile(
-                          context,
-                          Icons.language,
-                          "What are the visa requirements for Japan?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.attach_money,
-                          "How much does a Schengen visa cost?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.schedule,
-                          "Best time to visit New Zealand?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.local_hospital,
-                          "Travel insurance requirements for Europe?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.restaurant,
-                          "Top restaurants in Paris with vegetarian options?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.beach_access,
-                          "Best beaches in Thailand for families?",
-                        ),
-                        _buildSuggestionTile(
-                          context,
-                          Icons.hiking,
-                          "Hiking trails in Switzerland for beginners?",
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
-    );
+    )
+  ));
   }
 
   Widget _buildSuggestionTile(BuildContext context, IconData icon, String text) {
@@ -201,7 +261,6 @@ class SuggestionsPage extends StatelessWidget {
   }
 }
 
-
 class backgroundCanvas extends StatefulWidget {
   const backgroundCanvas({super.key});
 
@@ -212,11 +271,6 @@ class backgroundCanvas extends StatefulWidget {
 class _backgroundCanvasState extends State<backgroundCanvas> {
   String newMessage = '';
   final TextEditingController _textController = TextEditingController();
-  static const double _kInputBarHeight = 84.0;
-  double kHomeIndicatorGap = 6.0;
-  final GlobalKey _inputBarKey = GlobalKey();
-  double? _measuredBarHeight;
-
 
   void _navigateToChat(String message) {
     if (message.trim().isNotEmpty) {
@@ -230,39 +284,33 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
   }
 
   void _openSuggestions() {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        transitionDuration: Duration(milliseconds: 600),
-        pageBuilder: (context, animation, secondaryAnimation) => SuggestionsPage(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
-  }
+  Navigator.push(
+    context,
+    PageRouteBuilder(
+      opaque: false, 
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 400),
+      reverseTransitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) => const SuggestionsPage(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          ),
+          child: child,
+        );
+      },
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-
-    // Measure the actual input bar height (once it’s laid out)
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    final h = _inputBarKey.currentContext?.size?.height;
-    if (h != null && (_measuredBarHeight == null || (h - _measuredBarHeight!).abs() > 0.5)) {
-      setState(() => _measuredBarHeight = h);
-    }
-  });
-
-    final double kb = media.viewInsets.bottom;  // keyboard height
-    final double barH = _measuredBarHeight ?? _kInputBarHeight;
-    final double safeBottom = media.padding.bottom; // Safe area bottom
-    final double bottomGap = kb > 0 
-        ? kb + barH + 20.0  // When keyboard is open
-        : barH + safeBottom + 20.0;  // When keyboard is closed, include safe area
+    final keyboardHeight = media.viewInsets.bottom;
+    final hasKeyboard = keyboardHeight > 0;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -279,85 +327,79 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
           frequency: 5,
           speed: 3,
         ),
-        child: SafeArea(
-          top: true,
-          bottom: false,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Stack(
-              children: [
-                // Settings button at top right
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SettingsPage(),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Icon(Icons.settings, color: Colors.white, size: 18),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'Settings',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
+        child: Stack(
+          children: [
+            // Settings button at top right
+            Positioned(
+              top: media.padding.top + 16,
+              right: 16,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsPage(),
                             ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.settings, color: Colors.white, size: 18),
+                              SizedBox(width: 6),
+                              Text(
+                                'Settings',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              
-                // Main content (bottom-anchored, above input bar)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    // leave room for the input bar + safe area + a little breathing space
-                    bottom: bottomGap,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Centered "More suggestions" chip
-                      Center(
-                        child: GestureDetector(
+              ),
+            ),
+
+            // Main content with input bar
+            Column(
+              children: [
+                // Suggestions content
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: hasKeyboard ? 20 : 16, // Less padding when keyboard is closed
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        // "More suggestions" chip
+                        GestureDetector(
                           onTap: _openSuggestions,
                           child: Hero(
                             tag: 'suggestions-hero',
@@ -404,101 +446,90 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                             ),
                           ),
                         ),
-                      ),
-            
-                      const SizedBox(height: 12),
-            
-                      // Suggestions grid (centered, responsive)
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          
-                          return Align(
-                            alignment: Alignment.topCenter,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 600),
-                              child: GridView.count(
-                                crossAxisCount: 2, // Always 2 columns for consistency
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                mainAxisSpacing: 12,
-                                crossAxisSpacing: 12,
-                                childAspectRatio: 2.2,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => _navigateToChat("Give me documents for a US Visa?"),
-                                    child: centeredTextContainer(
-                                      boldText: "Give me documents",
-                                      normalText: " for a US Visa?",
-                                      icon: const Icon(Icons.description, color: Colors.white, size: 20),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
-                                    child: centeredTextContainer(
-                                      boldText: "How long does it take to process",
-                                      normalText: " a UK work visa?",
-                                      icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
-                                    child: centeredTextContainer(
-                                      boldText: "Give me flights to London",
-                                      normalText: " if I want to leave at 20th October.",
-                                      icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
-                                      maxLines: 4,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
-                                    child: centeredTextContainer(
-                                      boldText: "Give me hotel options in Athens",
-                                      normalText: " from 16th May to 20th May 2026.",
-                                      icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
-                                      maxLines: 4,
-                                    ),
-                                  ),
-                                ],
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Suggestions grid
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: GridView.count(
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 1.8, // Adjusted for better height
+                            children: [
+                              GestureDetector(
+                                onTap: () => _navigateToChat("Give me documents for a US Visa?"),
+                                child: centeredTextContainer(
+                                  boldText: "Give me documents",
+                                  normalText: " for a US Visa?",
+                                  icon: const Icon(Icons.description, color: Colors.white, size: 20),
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                              GestureDetector(
+                                onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
+                                child: centeredTextContainer(
+                                  boldText: "How long does it take to process",
+                                  normalText: " a UK work visa?",
+                                  icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
+                                child: centeredTextContainer(
+                                  boldText: "Give me flights to London",
+                                  normalText: " if I want to leave at 20th October.",
+                                  icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                                  maxLines: 4,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
+                                child: centeredTextContainer(
+                                  boldText: "Give me hotel options in Athens",
+                                  normalText: " from 16th May to 20th May 2026.",
+                                  icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                                  maxLines: 4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              // Input area absolutely stuck to the very bottom
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
-                    child: Container(
-                      key: _inputBarKey,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30),
+                
+                // Input bar at bottom
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  transform: Matrix4.translationValues(0, hasKeyboard ? -keyboardHeight : 0, 0),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 1000, sigmaY: 1000),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                          border: Border(
+                            top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                            left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                            right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                          ),
                         ),
-                        border: Border(
-                          top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                          left: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                          right: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                        child: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                             child: Row(
                               children: [
                                 Expanded(
@@ -572,19 +603,14 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                               ],
                             ),
                           ),
-                          // Handle safe area only for iOS
-                          SizedBox(
-                            height: MediaQuery.of(context).padding.bottom,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),          
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -594,16 +620,22 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
     required String boldText,
     required String normalText,
     Widget? icon,
-    int maxLines = 3, // default: 3 lines for top tiles
+    int maxLines = 3,
   }) {
+    // Determine if this is a longer text item that needs more height
+    final bool needsTallerBox = maxLines >= 4;
+    
     return Material(
       color: Colors.transparent,
       child: Container(
         constraints: BoxConstraints(
-          minHeight: 64,   // base touch target
-          maxHeight: maxLines >= 4 ? 160 : 120, // taller when 4 lines
+          minHeight: needsTallerBox ? 80 : 64,     // Taller minimum for long text
+          maxHeight: needsTallerBox ? 180 : 120,   // Increased max height for long text
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: 12, 
+          vertical: needsTallerBox ? 12 : 10,      // More vertical padding for taller boxes
+        ),
         decoration: BoxDecoration(
           color: AppTheme.panel.withOpacity(0.85),
           borderRadius: BorderRadius.circular(20),
