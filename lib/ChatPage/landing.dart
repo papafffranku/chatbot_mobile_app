@@ -195,9 +195,7 @@ class _SuggestionsPageState extends State<SuggestionsPage>
                                     context,
                                     Icons.hiking,
                                     "Hiking trails in Switzerland for beginners?",
-                                  ),
-                                                                ],
-                                                              ),
+                                  ),],),
                                 ),
                           ),
                         ],
@@ -447,7 +445,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                           ),
                         ),
                         
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 6),
                         
                         // Suggestions grid
                         ConstrainedBox(
