@@ -456,7 +456,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
       child: Scaffold(
         backgroundColor: AppTheme.bg,
         extendBody: false, // Changed to false for proper keyboard handling
-        resizeToAvoidBottomInset: true, // Enable proper keyboard handling
+        resizeToAvoidBottomInset: false, // Enable proper keyboard handling
         body: AnimatedMeshGradient(
           colors: const [
             Color(0xFF0a0b1e), // Deep space blue
@@ -470,6 +470,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
             speed: 3,
           ),
           child: SafeArea(
+            bottom: false,
             child: Column(
               children: [
                 // Navigation buttons at top right
@@ -644,108 +645,120 @@ class _ChatInterfaceState extends State<ChatInterface> {
                   ),
                 ),
                 // Input area - now part of main column instead of bottomNavigationBar
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.panel.withOpacity(0.95),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
+                AnimatedPadding(
+                  padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
                   ),
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
+                  duration: const Duration(milliseconds: 100),
+                  curve: Curves.easeOut,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.panel.withOpacity(0.95),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 16,
+                    bottom: MediaQuery.of(context).padding.bottom + 16, // Safe area padding
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.1),
-                              width: 1,
-                            ),
-                          ),
-                          child: TextField(
-                            controller: _messageController,
-                            focusNode: _focusNode, // Attach FocusNode
-                            minLines: 1,
-                            maxLines: 5,
-                            keyboardType: TextInputType.multiline,
-                            textInputAction: TextInputAction.newline,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              hintText: 'Ask me anything about travel...',
-                              hintStyle: TextStyle(
-                                color: Colors.white.withOpacity(0.5),
-                                fontWeight: FontWeight.w400,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 12,
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                                width: 1,
                               ),
                             ),
-                            onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
-                            enabled: !_isLoading,
+                            child: TextField(
+                              controller: _messageController,
+                              focusNode: _focusNode, // Attach FocusNode
+                              minLines: 1,
+                              maxLines: 5,
+                              keyboardType: TextInputType.multiline,
+                              textInputAction: TextInputAction.newline,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: 'Ask me anything about travel...',
+                                hintStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.5),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                              ),
+                              onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
+                              enabled: !_isLoading,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: _isLoading
+                        const SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: _isLoading
+                                  ? [
+                                      AppTheme.bubbleUser.withOpacity(0.3),
+                                      AppTheme.bubbleUser.withOpacity(0.3),
+                                    ]
+                                  : [
+                                      AppTheme.bubbleUser,
+                                      AppTheme.accent,
+                                    ],
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: !_isLoading
                                 ? [
-                                    AppTheme.bubbleUser.withOpacity(0.3),
-                                    AppTheme.bubbleUser.withOpacity(0.3),
+                                    BoxShadow(
+                                      color: AppTheme.accent.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
                                   ]
-                                : [
-                                    AppTheme.bubbleUser,
-                                    AppTheme.accent,
-                                  ],
+                                : [],
                           ),
-                          shape: BoxShape.circle,
-                          boxShadow: !_isLoading
-                              ? [
-                                  BoxShadow(
-                                    color: AppTheme.accent.withOpacity(0.3),
-                                    blurRadius: 8,
-                                    spreadRadius: 1,
-                                  ),
-                                ]
-                              : [],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(50),
-                            onTap: _isLoading
-                                ? null
-                                : () {
-                                    HapticFeedback.lightImpact();
-                                    _sendMessage(_messageController.text);
-                                  },
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              child: Icon(
-                                _isLoading ? Icons.hourglass_empty : Icons.send,
-                                color: Colors.white,
-                                size: 24,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(50),
+                              onTap: _isLoading
+                                  ? null
+                                  : () {
+                                      HapticFeedback.lightImpact();
+                                      _sendMessage(_messageController.text);
+                                    },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                child: Icon(
+                                  _isLoading ? Icons.hourglass_empty : Icons.send,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
