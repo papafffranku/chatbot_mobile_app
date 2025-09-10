@@ -467,10 +467,10 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => _navigateToChat("How long does it take to process a UK work visa?"),
+                                onTap: () => _navigateToChat("Prepare an itinerary for a 7-day trip to Paris"),
                                 child: centeredTextContainer(
-                                  boldText: "How long does it take to process",
-                                  normalText: " a UK work visa?",
+                                  boldText: "Prepare an itinerary for a 7-day",
+                                  normalText: " trip to Paris ",
                                   icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
                                 ),
                               ),

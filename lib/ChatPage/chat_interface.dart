@@ -23,6 +23,7 @@ class ChatInterface extends StatefulWidget {
 class _ChatInterfaceState extends State<ChatInterface> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode(); // Add FocusNode
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
   StreamSubscription? _streamSubscription;
@@ -52,9 +53,11 @@ class _ChatInterfaceState extends State<ChatInterface> {
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
-    HapticFeedback.selectionClick(); // tap feedback on send
+    HapticFeedback.selectionClick();
     _didHapticOnFirstChunk = false;
-
+    
+    // Dismiss keyboard after sending
+    _focusNode.unfocus();
 
     // Add user message to chat
     setState(() {
@@ -444,124 +447,299 @@ class _ChatInterfaceState extends State<ChatInterface> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.bg,
-      extendBody: true,
-      body: AnimatedMeshGradient(
-        colors: const [
-          Color(0xFF0a0b1e), // Deep space blue
-          Color(0xFF4c1d95), // Rich purple
-          Color(0xFF3b82f6), // Sky blue
-          Color(0xFF06b6d4), // Cyan
-        ],
-        options: AnimatedMeshGradientOptions(
-          amplitude: 30,
-          frequency: 5,
-          speed: 3,
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // New Chat button at top right
-              // Navigation buttons at top right
-              Padding(
-                padding: const EdgeInsets.only(top: 16, right: 16, left: 16),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      // Settings button
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
+    return GestureDetector(
+      // Wrap entire Scaffold with GestureDetector to dismiss keyboard
+      onTap: () {
+        // Dismiss keyboard when tapping outside
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.bg,
+        extendBody: false, // Changed to false for proper keyboard handling
+        resizeToAvoidBottomInset: true, // Enable proper keyboard handling
+        body: AnimatedMeshGradient(
+          colors: const [
+            Color(0xFF0a0b1e), // Deep space blue
+            Color(0xFF4c1d95), // Rich purple
+            Color(0xFF3b82f6), // Sky blue
+            Color(0xFF06b6d4), // Cyan
+          ],
+          options: AnimatedMeshGradientOptions(
+            amplitude: 30,
+            frequency: 5,
+            speed: 3,
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Navigation buttons at top right
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, right: 16, left: 16),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        // Settings button
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.1),
-                                width: 1,
-                              ),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const SettingsPage(),
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: const [
-                                      Icon(Icons.settings, color: Colors.white, size: 18),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        'Settings',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.1),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const SettingsPage(),
                                       ),
-                                    ],
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(Icons.settings, color: Colors.white, size: 18),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'Settings',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      // New Chat button
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
+                        const SizedBox(width: 12),
+                        // New Chat button
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.1),
-                                width: 1,
-                              ),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  Navigator.pop(context);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: const [
-                                      Icon(Icons.add, color: Colors.white, size: 18),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        'New Chat',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.1),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    Navigator.pop(context);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Icon(Icons.add, color: Colors.white, size: 18),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'New Chat',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Chat messages area
+                Expanded(
+                  child: Stack(
+                    children: [
+                      ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          top: 8,
+                          bottom: 20, // Reduced padding since input is now part of main layout
+                        ),
+                        itemCount: _messages.length + (_isLoading && _messages.isNotEmpty && !_messages.last.isStreaming ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == _messages.length && _isLoading) {
+                            return const TravelLoader();
+                          }
+                          final message = _messages[index];
+          
+                          if (message.isStreaming && message.text.isEmpty) {
+                            return const TravelLoader();
+                          }
+          
+                          return MessageBubble(
+                            message: message,
+                            onLinkTap: _launchURL,
+                          );
+                        },
+                      ),
+          
+                      if (_showJumpToBottom)
+                        Positioned(
+                          right: 16,
+                          bottom: 20,
+                          child: GestureDetector(
+                            onTap: _scrollToBottom,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.bubbleUser,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.25),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.arrow_downward, size: 16, color: Colors.white),
+                                  SizedBox(width: 6),
+                                  Text('Jump to latest', style: TextStyle(color: Colors.white, fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Input area - now part of main column instead of bottomNavigationBar
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.panel.withOpacity(0.95),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _messageController,
+                            focusNode: _focusNode, // Attach FocusNode
+                            minLines: 1,
+                            maxLines: 5,
+                            keyboardType: TextInputType.multiline,
+                            textInputAction: TextInputAction.newline,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'Ask me anything about travel...',
+                              hintStyle: TextStyle(
+                                color: Colors.white.withOpacity(0.5),
+                                fontWeight: FontWeight.w400,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                            onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
+                            enabled: !_isLoading,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: _isLoading
+                                ? [
+                                    AppTheme.bubbleUser.withOpacity(0.3),
+                                    AppTheme.bubbleUser.withOpacity(0.3),
+                                  ]
+                                : [
+                                    AppTheme.bubbleUser,
+                                    AppTheme.accent,
+                                  ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: !_isLoading
+                              ? [
+                                  BoxShadow(
+                                    color: AppTheme.accent.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(50),
+                            onTap: _isLoading
+                                ? null
+                                : () {
+                                    HapticFeedback.lightImpact();
+                                    _sendMessage(_messageController.text);
+                                  },
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              child: Icon(
+                                _isLoading ? Icons.hourglass_empty : Icons.send,
+                                color: Colors.white,
+                                size: 24,
                               ),
                             ),
                           ),
@@ -570,196 +748,8 @@ class _ChatInterfaceState extends State<ChatInterface> {
                     ],
                   ),
                 ),
-              ),
-              // Chat messages area
-              Expanded(
-                child: Stack(
-                  children: [
-                    ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        top: 8,
-                        bottom: 100, // Increased padding to ensure messages don't go behind input
-                      ),
-                      itemCount: _messages.length + (_isLoading && _messages.isNotEmpty && !_messages.last.isStreaming ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == _messages.length && _isLoading) {
-                          return const TravelLoader();
-                        }
-                        final message = _messages[index];
-        
-                        if (message.isStreaming && message.text.isEmpty) {
-                          return const TravelLoader();
-                        }
-        
-                        return MessageBubble(
-                          message: message,
-                          onLinkTap: _launchURL,
-                        );
-                      },
-                    ),
-        
-                    if (_showJumpToBottom)
-                      Positioned(
-                        right: 16,
-                        bottom: 100, // Moved up to be above the input area
-                        child: GestureDetector(
-                          onTap: _scrollToBottom,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.bubbleUser,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.25),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.arrow_downward, size: 16, color: Colors.white),
-                                SizedBox(width: 6),
-                                Text('Jump to latest', style: TextStyle(color: Colors.white, fontSize: 12)),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              // Input area 
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              AppTheme.panel.withOpacity(0.3),
-              AppTheme.panel.withOpacity(0.6),
-              AppTheme.panel.withOpacity(0.95),
-            ],
-            stops: const [0.0, 0.3, 0.6, 1.0],
-          ),
-        ),
-        child: Container(
-          margin: const EdgeInsets.only(top: 20),
-          decoration: BoxDecoration(
-            color: AppTheme.panel.withOpacity(0.95),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
+              ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(context).padding.bottom + 16,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
-                      width: 1,
-                    ),
-                  ),
-                  child: TextField(
-                    controller: _messageController,
-                    minLines: 1,
-                    maxLines: 5,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.newline,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Ask me anything about travel...',
-                      hintStyle: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
-                        fontWeight: FontWeight.w400,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                    ),
-                    onSubmitted: _isLoading ? null : (_) => _sendMessage(_messageController.text),
-                    enabled: !_isLoading,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: _isLoading
-                        ? [
-                            AppTheme.bubbleUser.withOpacity(0.3),
-                            AppTheme.bubbleUser.withOpacity(0.3),
-                          ]
-                        : [
-                            AppTheme.bubbleUser,
-                            AppTheme.accent,
-                          ],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: !_isLoading
-                      ? [
-                          BoxShadow(
-                            color: AppTheme.accent.withOpacity(0.3),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(50),
-                    onTap: _isLoading
-                        ? null
-                        : () {
-                            HapticFeedback.lightImpact();
-                            _sendMessage(_messageController.text);
-                          },
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      child: Icon(
-                        _isLoading ? Icons.hourglass_empty : Icons.send,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
@@ -771,10 +761,12 @@ class _ChatInterfaceState extends State<ChatInterface> {
     _streamSubscription?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose(); // Dispose FocusNode
     super.dispose();
   }
 }
 
+// [Rest of the code remains the same - ChatMessage class, MessageBubble widget, and TravelLoader widget]
 // Chat message model
 class ChatMessage {
   String text;
