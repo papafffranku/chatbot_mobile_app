@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui'; // For ImageFilter
+import 'dart:math'; // For trigonometric functions and Random
 import 'chat_interface.dart'; // Import the chat interface
 import '../theme/app_theme.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
@@ -266,9 +267,143 @@ class backgroundCanvas extends StatefulWidget {
   State<backgroundCanvas> createState() => _backgroundCanvasState();
 }
 
-class _backgroundCanvasState extends State<backgroundCanvas> {
+class _backgroundCanvasState extends State<backgroundCanvas> 
+    with TickerProviderStateMixin {
   String newMessage = '';
   final TextEditingController _textController = TextEditingController();
+  
+  // Animation controllers
+  late AnimationController _greetingFadeController;
+  late AnimationController _subtextScaleController;
+  late Animation<double> _greetingFadeAnimation;
+  late Animation<double> _subtextScaleAnimation;
+  late Animation<double> _subtextFadeAnimation;
+  
+  // Flight animations
+  final List<AnimationController> _flightControllers = [];
+  final List<Animation<double>> _flightAnimations = [];
+  final List<double> _flightYOffsets = []; // Random Y positions
+  final List<double> _flightSpeeds = []; // Random speeds
+  final List<double> _parabolaHeights = []; // Random parabola heights
+  final List<bool> _flightDirections = []; // true = left to right, false = right to left
+  final Random _random = Random();
+  final List<double> _endYOffsets = [];
+  final List<double> _ctrlXJitters = [];
+  
+  // Get time-based greeting
+  String getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Good morning';
+    } else if (hour < 17) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  }
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize greeting fade animation
+    _greetingFadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _greetingFadeAnimation = CurvedAnimation(
+      parent: _greetingFadeController,
+      curve: Curves.easeIn,
+    );
+    
+    // Initialize subtext scale animation
+    _subtextScaleController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _subtextScaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _subtextScaleController,
+      curve: Curves.elasticOut,
+    ));
+    
+    _subtextFadeAnimation = CurvedAnimation(
+      parent: _subtextScaleController,
+      curve: Curves.easeIn,
+    );
+    
+    // Initialize 6 flight animations
+    for (int i = 0; i < 6; i++) {
+    final controller = AnimationController(
+      duration: Duration(seconds: 8 + _random.nextInt(8)),
+      vsync: this,
+    );
+    _flightControllers.add(controller);
+
+    // Random direction (true = L→R)
+    final bool goingRight = _random.nextBool();
+    _flightDirections.add(goingRight);
+
+    // Always 0→1; we’ll handle direction in the builder
+    _flightAnimations.add(Tween<double>(begin: 0.0, end: 1.0).animate(controller));
+
+    // Randomized path params
+    _flightYOffsets.add(_random.nextDouble() * 60.0);           // start Y (0..60)
+    _endYOffsets.add(_random.nextDouble() * 60.0);              // end Y (0..60)
+    _parabolaHeights.add(-15.0 + _random.nextDouble() * 30.0);  // vertical bump
+    _ctrlXJitters.add((_random.nextDouble() - 0.5) * 80.0);     // +/- 40px
+    _flightSpeeds.add(0.7 + _random.nextDouble() * 0.6);
+
+    controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // New random path next loop
+        _flightYOffsets[i]  = _random.nextDouble() * 60.0;
+        _endYOffsets[i]     = _random.nextDouble() * 60.0;
+        _parabolaHeights[i] = -15.0 + _random.nextDouble() * 30.0;
+        _ctrlXJitters[i]    = (_random.nextDouble() - 0.5) * 80.0;
+        _flightSpeeds[i]    = 0.7 + _random.nextDouble() * 0.6;
+
+        // Maybe flip direction
+        _flightDirections[i] = _random.nextBool();
+
+        // Keep tween 0→1; restart
+        controller.duration = Duration(
+          milliseconds: ((8000 + _random.nextInt(8000)) / _flightSpeeds[i]).round(),
+        );
+        controller.forward(from: 0.0);
+      }
+    });
+  }    
+    // Start animations
+    _greetingFadeController.forward().then((_) {
+      // After greeting fades in, start subtext animation
+      _subtextScaleController.forward();
+      
+      // Start flight animations with staggered delays
+      for (int i = 0; i < _flightControllers.length; i++) {
+        Future.delayed(Duration(milliseconds: i * 1500), () {
+          if (mounted) {
+            _flightControllers[i].forward(from: 0.0);
+          }
+        });
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _greetingFadeController.dispose();
+    _subtextScaleController.dispose();
+    for (var controller in _flightControllers) {
+      controller.dispose();
+    }
+    _textController.dispose();
+    super.dispose();
+  }
 
   void _navigateToChat(String message) {
     if (message.trim().isNotEmpty) {
@@ -381,17 +516,117 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                 ),
               ),
             ),
+            // Flying airplane animations - wrap in a Stack that allows overflow
+            Stack(
+              clipBehavior: Clip.none, // This is the key - allows rendering outside bounds
+              children: [
+                for (int i = 0; i < _flightAnimations.length; i++)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 70,
+                    left: 0,
+                    child: AnimatedBuilder(
+                      animation: _flightAnimations[i],
+                      builder: (context, child) {
+                        final double screenWidth = MediaQuery.of(context).size.width;
+                        const double iconSize = 16.0;
+                        
+                        // Now planes can truly go off-screen
+                        final double minX = -iconSize - 20;  // Start fully off-screen left
+                        final double maxX = screenWidth + 20; // End fully off-screen right
+                        
+                        final double t = _flightAnimations[i].value;
+                        final bool goingRight = _flightDirections[i];
+                        
+                        final double startX = goingRight ? minX : maxX;
+                        final double endX   = goingRight ? maxX : minX;
+                        
+                        // Vertical positions
+                        final double startY = _flightYOffsets[i];
+                        final double endY   = _endYOffsets[i];
+                        
+                        // Control point centered on screen
+                        final double ctrlX = (screenWidth / 2) + _ctrlXJitters[i];
+                        final double ctrlY = ((startY + endY) / 2) + _parabolaHeights[i];
+                        
+                        // Quadratic Bézier calculation
+                        final double u = 1.0 - t;
+                        final double x = u*u*startX + 2*u*t*ctrlX + t*t*endX;
+                        final double y = u*u*startY + 2*u*t*ctrlY + t*t*endY;
+                        
+                        // Tangent for rotation
+                        final double dx = 2*u*(ctrlX - startX) + 2*t*(endX - ctrlX);
+                        final double dy = 2*u*(ctrlY - startY) + 2*t*(endY - ctrlY);
+                        final double angle = atan2(dy, dx);
+                        
+                        return Transform.translate(
+                          offset: Offset(x, y),
+                          child: Transform.rotate(
+                            angle: angle + pi / 2,
+                            child: const Icon(
+                              Icons.flight,
+                              color: Color(0xFF93C5FD),
+                              size: iconSize,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+
+            // Animated Greeting at top left
+            Positioned(
+              top: media.padding.top + 70,
+              left: 20,
+              width: MediaQuery.of(context).size.width + 32,
+              height: 80,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FadeTransition(
+                    opacity: _greetingFadeAnimation,
+                    child: Text(
+                      getGreeting(),
+                      style: const TextStyle(
+                        fontSize: 44,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                        height: 1.1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  FadeTransition(
+                    opacity: _subtextFadeAnimation,
+                    child: ScaleTransition(
+                      scale: _subtextScaleAnimation,
+                      child: Text(
+                        'Where shall we go today?',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white.withOpacity(0.85),
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             // Main content with input bar
             Column(
               children: [
-                // Suggestions content
+                // Greeting and suggestions content
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
                       left: 16,
                       right: 16,
-                      bottom: hasKeyboard ? 20 : 16, // Less padding when keyboard is closed
+                      bottom: hasKeyboard ? 20 : 16,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -456,7 +691,7 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
                             physics: const NeverScrollableScrollPhysics(),
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
-                            childAspectRatio: 1.8, // Adjusted for better height
+                            childAspectRatio: 1.8,
                             children: [
                               GestureDetector(
                                 onTap: () => _navigateToChat("Give me documents for a US Visa?"),
@@ -627,12 +862,12 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
       color: Colors.transparent,
       child: Container(
         constraints: BoxConstraints(
-          minHeight: needsTallerBox ? 80 : 64,     // Taller minimum for long text
-          maxHeight: needsTallerBox ? 180 : 120,   // Increased max height for long text
+          minHeight: needsTallerBox ? 80 : 64,
+          maxHeight: needsTallerBox ? 180 : 120,
         ),
         padding: EdgeInsets.symmetric(
           horizontal: 12, 
-          vertical: needsTallerBox ? 12 : 10,      // More vertical padding for taller boxes
+          vertical: needsTallerBox ? 12 : 10,
         ),
         decoration: BoxDecoration(
           color: AppTheme.panel.withOpacity(0.85),
@@ -689,12 +924,5 @@ class _backgroundCanvasState extends State<backgroundCanvas> {
         ),
       ),
     );
-  }
-
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
   }
 }

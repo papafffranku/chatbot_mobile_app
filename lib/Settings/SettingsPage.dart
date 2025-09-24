@@ -5,6 +5,7 @@ import 'dart:ui';
 import '../main.dart';
 import 'privacy_policy_page.dart';
 import 'contact_page.dart';
+import '../ChatPage/animationtest.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -172,6 +173,20 @@ Thank you.
                     _deleteAllChats(context);
                   },
                   isDestructive: true,
+                ),
+                _buildTile(
+                  icon: Icons.email_outlined,
+                  title: 'Animation',
+                  subtitle: 'Test',
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TravelGlobeWithText(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
