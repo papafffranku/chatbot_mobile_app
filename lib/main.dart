@@ -22,6 +22,10 @@ String _generateUserId() {
   return 'User_${timestamp}_$randomNum';
 }
 
+void regenerateUserId() {
+  globalUserId = _generateUserId();
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

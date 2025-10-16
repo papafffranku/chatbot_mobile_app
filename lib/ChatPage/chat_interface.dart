@@ -552,8 +552,10 @@ class _ChatInterfaceState extends State<ChatInterface> {
                                   borderRadius: BorderRadius.circular(20),
                                   onTap: () {
                                     HapticFeedback.lightImpact();
+                                    regenerateUserId();
                                     Navigator.pop(context);
                                   },
+
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                     child: Row(
