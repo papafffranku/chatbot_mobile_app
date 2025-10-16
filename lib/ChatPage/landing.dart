@@ -710,10 +710,10 @@ class _backgroundCanvasState extends State<backgroundCanvas>
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th October."),
+                                onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th January 2026."),
                                 child: centeredTextContainer(
                                   boldText: "Give me flights to London",
-                                  normalText: " if I want to leave at 20th October.",
+                                  normalText: " if I want to leave at 20th January.",
                                   icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
                                   maxLines: 4,
                                 ),
