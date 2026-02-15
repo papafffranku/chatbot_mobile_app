@@ -91,7 +91,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
 
       // Add timeout for connection
       final streamedResponse = await request.send().timeout(
-        const Duration(seconds: 10),
+        const Duration(seconds: 30),
         onTimeout: () {
           throw TimeoutException('Connection timeout');
         },

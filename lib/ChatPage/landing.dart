@@ -301,6 +301,27 @@ class _backgroundCanvasState extends State<backgroundCanvas>
       return 'Good evening';
     }
   }
+
+  // Format a DateTime as "15th March 2026"
+  String _formatDate(DateTime date) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    final day = date.day;
+    String suffix;
+    if (day >= 11 && day <= 13) {
+      suffix = 'th';
+    } else {
+      switch (day % 10) {
+        case 1: suffix = 'st'; break;
+        case 2: suffix = 'nd'; break;
+        case 3: suffix = 'rd'; break;
+        default: suffix = 'th';
+      }
+    }
+    return '$day$suffix ${months[date.month - 1]} ${date.year}';
+  }
   
   @override
   void initState() {
@@ -709,23 +730,39 @@ class _backgroundCanvasState extends State<backgroundCanvas>
                                   icon: const Icon(Icons.timelapse_rounded, color: Colors.white, size: 20),
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () => _navigateToChat("Give me flights to London if I want to leave at 20th January 2026."),
-                                child: centeredTextContainer(
-                                  boldText: "Give me flights to London",
-                                  normalText: " if I want to leave at 20th January.",
-                                  icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
-                                  maxLines: 4,
-                                ),
+                              Builder(
+                                builder: (context) {
+                                  final now = DateTime.now();
+                                  final flightDate = DateTime(now.year, now.month + 1, now.day);
+                                  final flightDateStr = _formatDate(flightDate);
+                                  return GestureDetector(
+                                    onTap: () => _navigateToChat("Give me flights to London if I want to leave at $flightDateStr."),
+                                    child: centeredTextContainer(
+                                      boldText: "Give me flights to London",
+                                      normalText: " if I want to leave at $flightDateStr.",
+                                      icon: const Icon(Icons.flight_rounded, color: Colors.white, size: 20),
+                                      maxLines: 4,
+                                    ),
+                                  );
+                                },
                               ),
-                              GestureDetector(
-                                onTap: () => _navigateToChat("Give me hotel options in Athens from 16th May to 20th May 2026."),
-                                child: centeredTextContainer(
-                                  boldText: "Give me hotel options in Athens",
-                                  normalText: " from 16th May to 20th May 2026.",
-                                  icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
-                                  maxLines: 4,
-                                ),
+                              Builder(
+                                builder: (context) {
+                                  final now = DateTime.now();
+                                  final checkIn = DateTime(now.year, now.month + 2, now.day);
+                                  final checkOut = checkIn.add(const Duration(days: 4));
+                                  final checkInStr = _formatDate(checkIn);
+                                  final checkOutStr = _formatDate(checkOut);
+                                  return GestureDetector(
+                                    onTap: () => _navigateToChat("Give me hotel options in Athens from $checkInStr to $checkOutStr."),
+                                    child: centeredTextContainer(
+                                      boldText: "Give me hotel options in Athens",
+                                      normalText: " from $checkInStr to $checkOutStr.",
+                                      icon: const Icon(Icons.local_hotel_rounded, color: Colors.white, size: 20),
+                                      maxLines: 4,
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
